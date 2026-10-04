@@ -1,4 +1,4 @@
-TAMALOU EN LIGNE — MISE EN PLACE (une seule fois, environ 15 minutes)
+TAMTAMDZ EN LIGNE — MISE EN PLACE (une seule fois, environ 15 minutes)
 =====================================================================
 
 Même principe que Mercato Duel : le site est hébergé sur Netlify, le code est
@@ -72,6 +72,15 @@ cartes de deux autres joueurs.
 Collage à tout moment, même pendant le tour d'un autre ou pendant un pouvoir,
 tant que la carte visible sur la défausse est de la même valeur ; plusieurs
 joueurs peuvent coller à la suite ; carte adverse collée = vous lui donnez une
-des vôtres ; erreur = carte de pénalité. Tamalou en début de tour ;
+des vôtres ; erreur = carte de pénalité.
+Tamalou : la manche s'arrête immédiatement, tout le monde dévoile ses cartes ;
+0 point si l'annonceur a strictement le plus petit total, sinon son total +10.
+Le pouvoir du 10 ne s'applique qu'à partir de 3 joueurs.
+Le total à ne pas dépasser (50/100/150/200) se choisit dans le salon avant la
+première manche. Manche 1 : tirage d'une carte, la plus forte commence ;
+ensuite le gagnant de la manche commence. La première carte de la défausse
+vaut toujours plus de 1.
+Tout se joue en touchant les cartes : la pioche ou la défausse pour jouer,
+une de ses cartes pour échanger, n'importe quelle carte pour coller. Tamalou en début de tour ;
 0 point si strictement le plus petit total, sinon total +10. Partie finie au-delà
 de 100 points.

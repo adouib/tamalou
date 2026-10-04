@@ -59,6 +59,10 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .btn.wide{ width:100%; }
 .link{ background:none; border:0; color:var(--mute); font-size:14px; padding:6px 4px; text-decoration:underline; text-underline-offset:3px; }
 .note{ color:var(--mute); font-size:14px; line-height:1.45; margin:0; }
+.note.err{ color:#FF8A8F; }
+.conn{ margin:0; text-align:center; font-size:13px; color:var(--mute); }
+.conn.ok{ color:var(--accent); }
+.conn.ko{ color:#FF8A8F; }
 
 /* ---------- Cards ---------- */
 .slot{ position:relative; border:0; padding:0; border-radius:8px; aspect-ratio:5/7; display:block; background:none; flex:none; }
@@ -146,7 +150,7 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .rules td:first-child{ font-family:var(--num); white-space:nowrap; color:var(--accent); }
 details summary{ cursor:pointer; color:var(--mute); font-size:14px; }
 
-#toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--text); color:var(--ink); padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:90vw; text-align:center; z-index:10; display:none; }
+#toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--accent); color:var(--accent-ink); padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:90vw; text-align:center; z-index:10; display:none; }
 @media (prefers-reduced-motion: no-preference){
   .hand.myturn{ animation:glow 2.2s ease-in-out infinite; }
   @keyframes glow{ 50%{ box-shadow:0 0 0 3px var(--accent) inset; } }
@@ -162,7 +166,7 @@ details summary{ cursor:pointer; color:var(--mute); font-size:14px; }
 const app=document.getElementById('app'), toastEl=document.getElementById('toast');
 let SB=null, ME=null, booted=false;
 let CODE=null, G=null, GV=0, chan=null, pollT=null;
-const ui={mode:null, sel:null, pick:null, reveal:null, name:'', code:'', rules:false};
+const ui={mode:null, sel:null, pick:null, reveal:null, name:'', code:'', rules:false, conn:null, err:''};
 
 const RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const LABEL={A:'A',J:'V',Q:'D',K:'R',JK:'★'};
@@ -395,11 +399,24 @@ async function mutate(fn){
   toast('La table est très occupée, réessayez.');
 }
 function act(name,args){ return mutate(st=>A[name](st,args||{})); }
+async function checkConn(){
+  if(!SB){ ui.conn={ok:false,msg:'config.js incomplet'}; return; }
+  try{
+    const {error}=await SB.from(TABLE).select('code',{count:'exact',head:true});
+    if(error) throw error;
+    ui.conn={ok:true};
+  }catch(e){
+    const m=(e&&e.message)||String(e);
+    ui.conn={ok:false,msg:/relation|does not exist|schema cache|404/i.test(m)?'La table n’existe pas encore : exécutez tamalou.sql dans Supabase (SQL Editor).':/Invalid API key|JWT|401/i.test(m)?'Clé anon incorrecte dans config.js.':'Connexion à Supabase impossible : '+m};
+  }
+  render();
+}
+function fail(msg){ ui.err=msg; toast(msg); render(); }
 function closeChannel(){ if(chan){ try{ SB.removeChannel(chan); }catch(e){} chan=null; } if(pollT){ clearInterval(pollT); pollT=null; } }
 async function openGame(code,quiet){
   closeChannel(); CODE=code; GV=0; G=null; ls('tamalou-code',code);
-  try{ const row=await fetchGame(code); if(!row){ if(!quiet) toast('Aucune partie avec ce code.'); closeGame(); return false; } applyRow(row); }
-  catch(e){ toast('Connexion impossible. Vérifiez votre réseau.'); closeGame(); return false; }
+  try{ const row=await fetchGame(code); if(!row){ if(!quiet) fail('Aucune partie avec ce code.'); closeGame(); return false; } applyRow(row); }
+  catch(e){ fail('Connexion impossible : '+((e&&e.message)||'réseau')); closeGame(); return false; }
   render();
   chan=SB.channel('tamalou-'+code)
     .on('postgres_changes',{event:'*',schema:'public',table:TABLE,filter:'code=eq.'+code},payload=>{
@@ -416,22 +433,22 @@ function newState(c,name){
     log:[{t:`${name} ouvre la table`,ts:Date.now()}],round:0,seq:0,created:Date.now()};
 }
 async function createGame(){
-  const name=ui.name.trim(); if(!name) return toast('Entrez votre prénom.');
-  ls('tamalou-name',name);
+  const name=ui.name.trim(); if(!name) return fail('Entrez votre prénom.');
+  ui.err=''; ls('tamalou-name',name);
   const L='ABCDEFGHJKLMNPQRSTUVWXYZ';
   for(let n=0;n<6;n++){
     const c=Array.from({length:4},()=>L[Math.floor(Math.random()*L.length)]).join('');
     const {error}=await SB.from(TABLE).insert({code:c,state:newState(c,name),version:1});
     if(!error){ openGame(c); return; }
-    if(error.code!=='23505'){ return toast('Impossible de créer la partie : '+(error.message||'erreur réseau')); }
+    if(error.code!=='23505'){ return fail('Impossible de créer la partie : '+(error.message||'erreur réseau')+(/relation|schema cache/i.test(error.message||'')?' → le script tamalou.sql n’a pas été exécuté dans Supabase.':'')); }
   }
   toast('Réessayez dans un instant.');
 }
 async function joinGame(){
   const name=ui.name.trim(); const code=ui.code.trim().toUpperCase();
-  if(!name) return toast('Entrez votre prénom.');
-  if(code.length!==4) return toast('Le code fait 4 lettres.');
-  ls('tamalou-name',name);
+  if(!name) return fail('Entrez votre prénom.');
+  if(code.length!==4) return fail('Le code fait 4 lettres.');
+  ui.err=''; ls('tamalou-name',name);
   if(!(await openGame(code))) return;
   if(G.players.some(p=>p.id===ME)) return;
   if(G.phase!=='lobby') return toast('Partie déjà commencée : vous regardez.');
@@ -527,11 +544,13 @@ function renderHome(){
   <div class="panel">
     <label class="f">Votre prénom<input id="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name)}"></label>
     <button class="btn main wide" data-a="create">Ouvrir une table</button>
+    ${ui.err?`<p class="note err">${esc(ui.err)}</p>`:''}
   </div>
   <div class="panel">
     <h2>Rejoindre une table</h2>
     <div class="row"><input id="code" class="code" maxlength="4" placeholder="CODE" autocapitalize="characters" value="${esc(ui.code)}"><button class="btn" data-a="join">Rejoindre</button></div>
   </div>`}
+  <p class="conn ${ui.conn?(ui.conn.ok?'ok':'ko'):''}">${!SB?'':!ui.conn?'Vérification de la connexion…':ui.conn.ok?'Connexion à la base : OK':esc(ui.conn.msg)}</p>
   <div class="panel"><details><summary>Rappel des règles</summary>${rulesHTML()}</details></div></div>`;
 }
 function renderLobby(){
@@ -699,6 +718,8 @@ render=function(){
   if(cfgOk()&&window.supabase){ try{ SB=window.supabase.createClient(window.TAMALOU_CONFIG.supabaseUrl,window.TAMALOU_CONFIG.supabaseAnonKey); }catch(e){ SB=null; } }
   booted=true;
   if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(e){} }
+  render();
+  checkConn();
   const last=ls('tamalou-code'); if(SB&&last){ await openGame(last,true); }
   render();
 })();

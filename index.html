@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tamalou</title>
-<meta name="theme-color" content="#0F1830">
+<meta name="theme-color" content="#0B0F1A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tamalou">
@@ -18,132 +18,138 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0F1830; --felt:#1C2E5C; --felt-hi:#26407A; --line:rgba(232,176,75,.32);
-  --saffron:#E8B04B; --cream:#FAF6EC; --red:#C3343F; --ink:#1D1B24;
-  --text:#F4EFE3; --mute:#A3AECB; --ok:#6CC195;
+  --bg:#0B0F1A; --bg2:#121829; --surface:#161D30; --surface2:#1E2740; --line:rgba(255,255,255,.09);
+  --accent:#C8F03C; --accent-ink:#13200A; --danger:#E5484D; --card:#FFFFFF; --ink:#15181F;
+  --red:#D93C44; --text:#F5F6FA; --mute:#8E97AD; --back:#243061;
   --ui:"Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --num:"Fraunces", Georgia, "Times New Roman", serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0B1226; --felt:#1A2B57; } }
-:root[data-theme="dark"]{ --bg:#0B1226; --felt:#1A2B57; }
-html{ height:100%; scroll-padding-top:env(safe-area-inset-top,0px); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0B0F1A; } }
+:root[data-theme="dark"]{ --bg:#0B0F1A; }
+html{ height:100%; min-height:100%; background:var(--bg); scroll-padding-top:env(safe-area-inset-top,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
-body{
-  margin:0; min-height:100%; font-family:var(--ui); color:var(--text);
-  background:radial-gradient(120% 80% at 50% 45%, var(--felt-hi) 0%, var(--felt) 45%, var(--bg) 100%) fixed, var(--bg);
-  -webkit-tap-highlight-color:transparent;
-}
-#app{ max-width:560px; margin:0 auto; padding:12px 14px 20px; display:flex; flex-direction:column; gap:14px; min-height:100%; }
+body{ margin:0; min-height:100%; font-family:var(--ui); color:var(--text); background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 60%); -webkit-tap-highlight-color:transparent; }
+#app{ max-width:520px; margin:0 auto; min-height:100%; display:flex; flex-direction:column; }
 button{ font:inherit; color:inherit; cursor:pointer; }
-button:focus-visible, input:focus-visible{ outline:3px solid var(--saffron); outline-offset:2px; }
+button:focus-visible, input:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+.page{ padding:14px 16px 24px; display:flex; flex-direction:column; gap:14px; }
 
-/* Home */
-.hero{ text-align:center; padding:36px 0 8px; }
-.hero h1{ font-family:var(--num); font-weight:900; font-size:clamp(52px,16vw,84px); line-height:.95; margin:0; letter-spacing:-.02em; }
-.hero p{ color:var(--mute); margin:12px auto 0; max-width:34ch; line-height:1.45; }
-.fan{ display:flex; justify-content:center; margin:22px 0 4px; height:96px; }
-.fan .slot{ margin:0 -14px; }
-.fan .slot:nth-child(1){ transform:rotate(-14deg) translateY(8px); }
-.fan .slot:nth-child(2){ transform:rotate(-4deg); }
-.fan .slot:nth-child(3){ transform:rotate(6deg); }
-.fan .slot:nth-child(4){ transform:rotate(15deg) translateY(10px); }
-.panel{ background:rgba(10,18,40,.45); border:1px solid var(--line); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:10px; }
-.panel h2{ font-size:17px; margin:0; font-weight:600; }
-label.f{ font-size:14px; color:var(--mute); display:flex; flex-direction:column; gap:6px; }
-input{ font:inherit; font-size:17px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--text); width:100%; }
+/* ---------- Home ---------- */
+.hero{ text-align:center; padding:28px 0 4px; }
+.hero h1{ font-family:var(--num); font-weight:900; font-size:clamp(48px,15vw,76px); line-height:.95; margin:0; letter-spacing:-.02em; }
+.hero p{ color:var(--mute); margin:12px auto 0; max-width:32ch; line-height:1.45; font-size:15px; }
+.fan{ display:flex; justify-content:center; align-items:flex-end; height:118px; margin:18px 0 0; }
+.fan .slot{ margin:0 -16px; transform-origin:50% 120%; }
+.fan .slot:nth-child(1){ transform:rotate(-16deg); } .fan .slot:nth-child(2){ transform:rotate(-5deg); }
+.fan .slot:nth-child(3){ transform:rotate(5deg); } .fan .slot:nth-child(4){ transform:rotate(16deg); }
+.panel{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.panel h2{ font-size:16px; margin:0; font-weight:600; }
+label.f{ font-size:13px; color:var(--mute); display:flex; flex-direction:column; gap:6px; }
+input{ font:inherit; font-size:17px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--text); width:100%; }
 input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num); font-size:22px; text-align:center; }
 .row{ display:flex; gap:10px; }
-.btn{ border:0; border-radius:14px; padding:13px 16px; font-weight:600; font-size:16px; background:rgba(255,255,255,.1); }
-.btn.main{ background:var(--saffron); color:#24190A; }
-.btn.call{ background:var(--red); color:#fff; }
-.btn.on{ background:var(--cream); color:var(--ink); }
-.btn:disabled{ opacity:.4; cursor:default; }
+.btn{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-weight:600; font-size:15px; background:var(--surface2); line-height:1.2; }
+.btn.main{ background:var(--accent); color:var(--accent-ink); border-color:transparent; }
+.btn.call{ background:var(--danger); color:#fff; border-color:transparent; }
+.btn.on{ background:var(--text); color:var(--ink); border-color:transparent; }
+.btn:disabled{ opacity:.35; cursor:default; }
 .btn.wide{ width:100%; }
-.link{ background:none; border:0; color:var(--mute); text-decoration:underline; font-size:14px; padding:6px; }
+.link{ background:none; border:0; color:var(--mute); font-size:14px; padding:6px 4px; text-decoration:underline; text-underline-offset:3px; }
 .note{ color:var(--mute); font-size:14px; line-height:1.45; margin:0; }
 
-/* Cards */
-.slot{ position:relative; border:0; padding:0; border-radius:9px; aspect-ratio:5/7; display:block; background:none; flex:none; }
-.slot.big{ width:clamp(66px,21vw,96px); }
-.many .slot.big{ width:clamp(54px,16vw,78px); }
-.slot.mid{ width:clamp(58px,17vw,82px); }
-.slot.mini{ width:36px; border-radius:6px; }
-.slot.empty{ border:1.5px dashed rgba(244,239,227,.18); }
-.back{ position:absolute; inset:0; border-radius:inherit; background-color:#22397A;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='none' stroke='%23E8B04B' stroke-width='1.1' opacity='.85'%3E%3Crect x='5' y='5' width='10' height='10'/%3E%3Crect x='5' y='5' width='10' height='10' transform='rotate(45 10 10)'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:15px 15px; box-shadow:inset 0 0 0 3px #F4EFE3, inset 0 0 0 4px #22397A, 0 2px 6px rgba(0,0,0,.35); }
-.mini .back,.slot.mini .back{ background-size:9px 9px; box-shadow:inset 0 0 0 2px #F4EFE3, 0 1px 3px rgba(0,0,0,.3); }
-.f{ position:absolute; inset:0; border-radius:inherit; background:var(--cream); color:var(--ink); box-shadow:0 2px 6px rgba(0,0,0,.35); font-family:var(--num); font-weight:700; }
+/* ---------- Cards ---------- */
+.slot{ position:relative; border:0; padding:0; border-radius:8px; aspect-ratio:5/7; display:block; background:none; flex:none; }
+.slot.big{ width:clamp(62px,19vw,84px); }
+.many .slot.big{ width:clamp(52px,15.5vw,70px); }
+.slot.mid{ width:clamp(54px,15vw,66px); }
+.slot.mini{ width:24px; border-radius:4px; }
+.slot.empty{ border:1.5px dashed rgba(255,255,255,.16); }
+.back{ position:absolute; inset:0; border-radius:inherit; background:var(--back);
+  box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 3px var(--back), 0 2px 5px rgba(0,0,0,.4); }
+.back::after{ content:""; position:absolute; inset:18% 20%; border-radius:4px; border:1.5px solid rgba(200,240,60,.9); background:repeating-linear-gradient(135deg,transparent 0 5px,rgba(200,240,60,.18) 5px 6px); }
+.slot.mini .back{ box-shadow:inset 0 0 0 1.5px #fff, 0 1px 3px rgba(0,0,0,.35); }
+.slot.mini .back::after{ inset:22% 24%; border-width:1px; background:none; opacity:.6; }
+.f{ position:absolute; inset:0; border-radius:inherit; background:var(--card); color:var(--ink); box-shadow:0 2px 5px rgba(0,0,0,.4); font-family:var(--num); font-weight:700; }
 .f.red{ color:var(--red); }
-.f.joker{ color:#8A5A0B; background:linear-gradient(160deg,#FFF6DD,#F3DDA6); }
-.slot.mini .f.joker .ix{ font-size:11px; }
-.f .ix{ position:absolute; top:5%; left:9%; font-size:clamp(15px,4.6vw,21px); line-height:.95; display:flex; flex-direction:column; align-items:center; }
-.f .ix i{ font-style:normal; font-size:.75em; }
-.f .ix.rot{ top:auto; left:auto; bottom:5%; right:9%; transform:rotate(180deg); }
-.f .pip{ position:absolute; inset:0; display:grid; place-items:center; font-size:clamp(26px,8vw,40px); }
-.slot.mini .f .ix{ position:static; height:100%; justify-content:center; font-size:13px; }
+.f.joker{ color:#4C6B0A; background:linear-gradient(160deg,#F7FFD6,#E4F79A); }
+.f .ix{ position:absolute; top:6%; left:9%; font-size:clamp(14px,4.2vw,19px); line-height:.9; display:flex; flex-direction:column; align-items:center; }
+.f .ix i{ font-style:normal; font-size:.72em; margin-top:1px; }
+.f .ix.rot{ top:auto; left:auto; bottom:6%; right:9%; transform:rotate(180deg); }
+.f .pip{ position:absolute; inset:0; display:grid; place-items:center; font-size:clamp(24px,7vw,34px); }
+.slot.mini .f .ix{ position:static; height:100%; justify-content:center; font-size:11px; line-height:1; }
+.slot.mini .f .ix i{ display:none; }
 .slot.mini .f .pip,.slot.mini .f .ix.rot{ display:none; }
-.slot.mid .f .ix{ font-size:clamp(14px,4vw,19px); }
+.slot.mini .f.joker .ix{ font-size:9px; }
 .slot.pick{ cursor:pointer; }
-.slot.pick::after{ content:""; position:absolute; inset:-4px; border-radius:12px; border:2.5px solid var(--saffron); }
-.slot.mini.pick::after{ inset:-3px; border-radius:8px; border-width:2px; }
-.slot.sel::after{ border-color:var(--ok); border-style:solid; }
-.slot.seen .f{ box-shadow:0 0 0 3px var(--ok), 0 2px 6px rgba(0,0,0,.35); }
+.slot.pick::after{ content:""; position:absolute; inset:-4px; border-radius:11px; border:2.5px solid var(--accent); }
+.slot.mini.pick::after{ inset:-3px; border-radius:6px; border-width:2px; }
+.slot.sel::after{ border-color:#fff; }
+.slot.seen .f{ box-shadow:0 0 0 3px var(--accent), 0 2px 6px rgba(0,0,0,.4); }
 
-/* Table */
-.top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.top .brand{ font-family:var(--num); font-weight:900; font-size:22px; }
-.top .meta{ color:var(--mute); font-size:14px; }
-.seats{ display:flex; gap:10px; overflow-x:auto; padding:4px 2px 6px; scrollbar-width:none; }
-.seat{ flex:none; border-radius:14px; padding:8px 10px; background:rgba(10,18,40,.4); border:1px solid transparent; min-width:96px; }
-.seat.turn{ border-color:var(--saffron); }
-.seat .nm{ font-size:14px; font-weight:600; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.seat .pts{ font-size:12px; color:var(--mute); margin-bottom:6px; }
-.grid{ display:grid; grid-template-columns:repeat(2,max-content); gap:6px; }
-.seat .grid{ gap:5px; }
-.tag{ display:inline-block; font-size:11px; font-weight:600; padding:2px 7px; border-radius:99px; background:var(--red); color:#fff; margin-left:4px; vertical-align:2px; }
-.center{ display:flex; justify-content:center; align-items:flex-end; gap:18px; padding:6px 0; }
-.pile{ display:flex; flex-direction:column; align-items:center; gap:6px; font-size:12px; color:var(--mute); }
+/* ---------- Table ---------- */
+.screen{ min-height:100dvh; display:flex; flex-direction:column; padding:10px 14px 12px; gap:10px; }
+.bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:32px; }
+.bar .brand{ font-family:var(--num); font-weight:900; font-size:20px; }
+.bar .meta{ color:var(--mute); font-size:13px; }
+.opps{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:2px 0 4px; }
+.opps::-webkit-scrollbar{ display:none; }
+.seat{ flex:none; display:flex; flex-direction:column; gap:6px; padding:8px 10px; border-radius:14px; background:var(--surface); border:1px solid var(--line); min-width:92px; }
+.seat.turn{ border-color:var(--accent); }
+.seat .head{ display:flex; align-items:center; gap:6px; }
+.seat .av{ width:22px; height:22px; border-radius:50%; background:var(--surface2); color:var(--text); font-size:11px; font-weight:800; display:grid; place-items:center; flex:none; }
+.seat.turn .av{ background:var(--accent); color:var(--accent-ink); }
+.seat .nm{ font-size:13px; font-weight:600; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.seat .sub{ font-size:11px; color:var(--mute); display:flex; gap:6px; align-items:center; }
+.tag{ display:inline-block; font-size:10px; font-weight:700; padding:1px 6px; border-radius:99px; background:var(--danger); color:#fff; }
+.seat .grid{ display:grid; grid-template-columns:repeat(2,24px); gap:4px; }
+.seat.wide .grid{ grid-template-columns:repeat(3,24px); }
+.center{ display:flex; justify-content:center; align-items:flex-end; gap:16px; padding:8px 0 2px; }
+.pile{ display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11px; color:var(--mute); }
 .pile .slot{ cursor:default; }
-.count{ position:absolute; right:-6px; top:-6px; background:var(--bg); color:var(--text); font-size:11px; border-radius:99px; padding:2px 6px; border:1px solid var(--line); z-index:1; }
-.status{ text-align:center; font-size:15px; line-height:1.4; min-height:42px; }
-.status b{ color:var(--saffron); font-weight:600; }
-.banner{ text-align:center; background:var(--red); color:#fff; border-radius:12px; padding:8px 12px; font-weight:600; font-size:14px; }
-.give{ background:var(--ok); color:#0E2418; }
-.actions{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
-.actions .btn{ flex:1 1 140px; }
-.hand{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 0 4px; border-radius:20px; }
-.hand .grid{ gap:12px; }
-.hand.myturn{ background:rgba(232,176,75,.08); box-shadow:0 0 0 1px var(--line); }
-.hand .who{ font-size:14px; color:var(--mute); }
-.log{ list-style:none; margin:0; padding:0; font-size:13px; color:var(--mute); display:flex; flex-direction:column; gap:3px; }
-.log li:first-child{ color:var(--text); }
-.hostbar{ display:flex; justify-content:center; gap:6px; flex-wrap:wrap; }
+.pile .lbl b{ color:var(--text); font-weight:600; }
+.count{ position:absolute; right:-6px; top:-6px; background:var(--text); color:var(--ink); font-size:11px; font-weight:700; border-radius:99px; padding:1px 6px; z-index:1; }
+.status{ text-align:center; font-size:14px; line-height:1.35; color:var(--text); padding:0 4px; min-height:36px; display:grid; place-items:center; }
+.status span{ display:block; }
+.status b{ color:var(--accent); font-weight:600; }
+.banner{ text-align:center; background:var(--danger); color:#fff; border-radius:10px; padding:7px 12px; font-weight:600; font-size:13px; }
+.banner.give{ background:var(--accent); color:var(--accent-ink); }
+.actions{ display:flex; gap:8px; justify-content:center; }
+.actions .btn{ flex:1 1 0; padding:11px 10px; }
+.actions:empty{ display:none; }
+.dock{ margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+.hand{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 10px 8px; border-radius:18px; background:var(--surface); border:1px solid var(--line); }
+.hand .grid{ display:grid; grid-template-columns:repeat(2,auto); gap:10px; }
+.hand.many .grid{ grid-template-columns:repeat(3,auto); gap:8px; }
+.hand.myturn{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+.hand .who{ font-size:12px; color:var(--mute); }
+.log{ font-size:12px; color:var(--mute); text-align:center; padding:0 6px; }
+.hostbar{ display:flex; justify-content:center; }
 
-/* Lobby & scores */
-.bigcode{ font-family:var(--num); font-weight:900; font-size:56px; letter-spacing:.18em; text-align:center; margin:4px 0; color:var(--saffron); }
+/* ---------- Lobby & scores ---------- */
+.bigcode{ font-family:var(--num); font-weight:900; font-size:56px; letter-spacing:.18em; text-align:center; margin:2px 0; color:var(--accent); }
 .plist{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
-.plist li{ display:flex; justify-content:space-between; padding:10px 12px; background:rgba(255,255,255,.05); border-radius:10px; }
-.score{ display:flex; flex-direction:column; gap:10px; }
-.srow{ background:rgba(10,18,40,.45); border-radius:14px; padding:10px 12px; display:grid; grid-template-columns:1fr auto; gap:6px 10px; align-items:center; }
-.srow .nm{ font-weight:600; }
+.plist li{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--bg); border-radius:10px; }
+.score{ display:flex; flex-direction:column; gap:8px; }
+.srow{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; display:grid; grid-template-columns:1fr auto; gap:6px 10px; align-items:center; }
+.srow .nm{ font-weight:600; display:flex; gap:6px; align-items:center; }
 .srow .tot{ font-family:var(--num); font-size:26px; font-weight:900; text-align:right; }
-.srow .det{ font-size:13px; color:var(--mute); }
+.srow .det{ font-size:12px; color:var(--mute); }
 .srow .cards{ display:flex; gap:4px; flex-wrap:wrap; grid-column:1 / -1; }
-.srow.win{ box-shadow:0 0 0 2px var(--saffron); }
-.rules{ font-size:14px; line-height:1.5; color:var(--text); }
+.srow .cards .slot.mini{ width:30px; }
+.srow.win{ border-color:var(--accent); }
+.rules{ font-size:14px; line-height:1.5; }
 .rules table{ border-collapse:collapse; width:100%; margin:6px 0; }
-.rules td{ padding:4px 6px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top; }
-.rules td:first-child{ font-family:var(--num); white-space:nowrap; color:var(--saffron); }
+.rules td{ padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+.rules td:first-child{ font-family:var(--num); white-space:nowrap; color:var(--accent); }
 details summary{ cursor:pointer; color:var(--mute); font-size:14px; }
 
-#toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--cream); color:var(--ink); padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:90vw; text-align:center; z-index:10; display:none; }
+#toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--text); color:var(--ink); padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:90vw; text-align:center; z-index:10; display:none; }
 @media (prefers-reduced-motion: no-preference){
-  .hand.myturn{ animation:glow 2.4s ease-in-out infinite; }
-  @keyframes glow{ 50%{ background:rgba(232,176,75,.15); } }
+  .hand.myturn{ animation:glow 2.2s ease-in-out infinite; }
+  @keyframes glow{ 50%{ box-shadow:0 0 0 3px var(--accent) inset; } }
 }
 </style>
 </head>
@@ -508,13 +514,13 @@ function rulesHTML(){
 }
 
 function render(){
-  if(!booted){ app.innerHTML='<div class="hero"><h1>Tamalou</h1><p>Installation de la table…</p></div>'; return; }
+  if(!booted){ app.innerHTML='<div class="page"><div class="hero"><h1>Tamalou</h1><p>Ouverture de la table…</p></div></div>'; return; }
   if(!CODE||!G){ renderHome(); return; }
   if(G.phase==='lobby') renderLobby(); else if(G.phase==='reveal'||G.phase==='over') renderScores(); else renderTable();
 }
 function renderHome(){
   const fan=[{r:'K',s:'h'},{r:'A',s:'s'},{r:'7',s:'d'},{r:'Q',s:'c'}].map(c=>cardHTML(c,'mid',true)).join('');
-  app.innerHTML=`
+  app.innerHTML=`<div class="page">
   <div class="hero"><h1>Tamalou</h1><div class="fan">${fan}</div>
   <p>Le jeu de cartes où le plus petit score gagne. Ouvrez une table, donnez le code à vos amis, jouez chacun sur son téléphone.</p></div>
   ${!SB?`<div class="panel"><h2>Configuration manquante</h2><p class="note">Le fichier <b>config.js</b> ne contient pas encore l’adresse et la clé « anon » de votre projet Supabase. Suivez le LISEZ-MOI.</p></div>`:`
@@ -526,12 +532,12 @@ function renderHome(){
     <h2>Rejoindre une table</h2>
     <div class="row"><input id="code" class="code" maxlength="4" placeholder="CODE" autocapitalize="characters" value="${esc(ui.code)}"><button class="btn" data-a="join">Rejoindre</button></div>
   </div>`}
-  <div class="panel"><details><summary>Rappel des règles</summary>${rulesHTML()}</details></div>`;
+  <div class="panel"><details><summary>Rappel des règles</summary>${rulesHTML()}</details></div></div>`;
 }
 function renderLobby(){
   const host=G.host===ME, i=mi(G);
-  app.innerHTML=`
-  <div class="top"><span class="brand">Tamalou</span><button class="link" data-a="quit">Quitter</button></div>
+  app.innerHTML=`<div class="page">
+  <div class="bar"><span class="brand">Tamalou</span><button class="link" data-a="quit">Quitter</button></div>
   <div class="panel" style="text-align:center">
     <p class="note">Code de la table</p><div class="bigcode">${esc(G.code)}</div>
     <p class="note">Vos amis ouvrent ce même lien, entrent leur prénom et ce code.</p>
@@ -541,22 +547,24 @@ function renderLobby(){
     <ul class="plist">${G.players.map(p=>`<li><span>${esc(p.name)}${p.id===ME?' (vous)':''}</span><span class="note">${p.id===G.host?'hôte':''}</span></li>`).join('')}</ul>
     ${i<0?`<p class="note">Vous n’êtes pas à cette table.</p>`:''}
     ${host?`<button class="btn main wide" data-a="start" ${G.players.length<2?'disabled':''}>Distribuer les cartes</button>${G.players.length<2?'<p class="note">Il faut au moins 2 joueurs.</p>':''}`:`<p class="note">L’hôte lance la partie quand tout le monde est là.</p>`}
-  </div>`;
+  </div></div>`;
 }
 function renderTable(){
   const st=G, i=mi(st), it=interaction(st), n=st.players.length;
   const order=[]; for(let k=1;k<=n;k++){ const idx=((i<0?0:i)+k)%n; if(idx!==i) order.push(idx); }
   if(i<0){ order.length=0; for(let k=0;k<n;k++) order.push(k); }
-  const seats=order.map(k=>{ const p=st.players[k];
-    return `<div class="seat${st.turn===k&&st.phase==='play'?' turn':''}"><div class="nm">${esc(p.name)}${st.caller===k?'<span class="tag">Tamalou</span>':''}</div>
-    <div class="pts">${p.total||0} pts${st.phase==='peek'?(p.ready?' · prêt':''):''}</div>
+  const seats=order.map(k=>{ const p=st.players[k]; const nb=count(p);
+    const sub=st.phase==='peek'?(p.ready?'prêt':'mémorise…'):`${nb} carte${nb>1?'s':''} · ${p.total||0} pts`;
+    return `<div class="seat${st.turn===k&&st.phase==='play'?' turn':''}${p.slots.length>4?' wide':''}">
+    <div class="head"><span class="av">${esc(p.name.slice(0,1).toUpperCase())}</span><span class="nm">${esc(p.name)}</span></div>
+    <div class="sub">${sub}${st.caller===k?'<span class="tag">Tamalou</span>':''}</div>
     <div class="grid">${p.slots.map((_,s)=>slotHTML(st,k,s,'mini',it)).join('')}</div></div>`; }).join('');
   const tp=top(st), me=i>=0?st.players[i]:null;
   const myTurn=st.phase==='play'&&st.turn===i;
   let heldHTML='';
   if(st.held){
     const up=myTurn||st.heldFrom==='discard';
-    heldHTML=`<div class="pile">${cardHTML(st.held,'mid',up)}<span>${myTurn?'Votre carte':'En main de '+esc(st.players[st.turn].name)}</span></div>`;
+    heldHTML=`<div class="pile">${cardHTML(st.held,'mid',up)}<span class="lbl">${myTurn?'<b>Votre carte</b>':'En main : '+esc(st.players[st.turn].name)}</span></div>`;
   }
   // status & actions
   let status='', actions='', banner='';
@@ -576,8 +584,8 @@ function renderTable(){
       actions=`<button class="btn main" data-a="draw">Piocher</button><button class="btn" data-a="take" ${!tp||count(me)===0?'disabled':''}>Prendre ${tp?cname(tp):'la défausse'}</button>${st.caller===null?'<button class="btn call" data-a="tamalou">Tamalou !</button>':''}`;
     } else if(st.step==='drawn'){
       const pw=powerOf(st.held.r);
-      status=`Touchez une de vos cartes pour l’échanger, ou défaussez ${cname(st.held)}.`;
-      actions=pw?`<button class="btn main" data-a="discardPower">Défausser et ${POWER_TXT[pw]}</button><button class="btn" data-a="discardHeld">Défausser sans pouvoir</button>`:`<button class="btn main" data-a="discardHeld">Défausser</button>`;
+      status=pw?`Échangez ${cname(st.held)} avec une de vos cartes, ou défaussez-le. Pouvoir du ${st.held.r} : <b>${POWER_TXT[pw]}</b>.`:`Touchez une de vos cartes pour l’échanger avec ${cname(st.held)}, ou défaussez-le.`;
+      actions=pw?`<button class="btn main" data-a="discardPower">Défausser + pouvoir</button><button class="btn" data-a="discardHeld">Défausser seulement</button>`:`<button class="btn main" data-a="discardHeld">Défausser</button>`;
     } else if(st.step==='fromDiscard'){
       status=`Touchez la carte à remplacer par ${cname(st.held)}.`;
     } else if(st.step==='power'){
@@ -599,34 +607,37 @@ function renderTable(){
   let coller='';
   if(st.phase==='play' && i>=0 && st.caller!==i){
     const on=ui.mode==='coller';
-    coller=`<button class="btn ${on?'on':''}" data-a="coller" ${canColler(st)?'':'disabled'}>${on?'Touchez la carte à coller':'Coller sur '+(tp?cname(tp):'…')}</button>`;
+    coller=`<button class="btn ${on?'on':''}" data-a="coller" ${canColler(st)?'':'disabled'}>${on?'Touchez la carte à coller…':'Coller un '+(tp?cname(tp):'…')}</button>`;
   }
   const hostbar=(st.host===ME && st.phase==='play' && st.turn!==i)?`<div class="hostbar"><button class="link" data-a="skipTurn">Passer le tour de ${esc(st.players[st.turn].name)}</button></div>`:'';
   const mine=me?`<div class="hand${myTurn?' myturn':''}${me.slots.length>4?' many':''}">
       <div class="grid">${me.slots.map((_,s)=>slotHTML(st,i,s,'big',it)).join('')}</div>
-      <div class="who">Vos cartes · ${me.total||0} pts${st.caller===i?' · jeu gelé':''}</div></div>`:'';
-  app.innerHTML=`
-  <div class="top"><span class="brand">Tamalou</span><span class="meta">Table ${esc(st.code)} · manche ${st.round}</span><button class="link" data-a="rules">Règles</button></div>
+      <div class="who">${esc(me.name)} · ${me.total||0} pts${st.caller===i?' · jeu gelé':''}</div></div>`:'';
+  const last=(st.log||[])[0];
+  app.innerHTML=`<div class="screen">
+  <div class="bar"><span class="brand">Tamalou</span><span class="meta">Table ${esc(st.code)} · manche ${st.round}</span><button class="link" data-a="rules">Règles</button></div>
   ${ui.rules?`<div class="panel">${rulesHTML()}<button class="btn" data-a="rules">Fermer</button></div>`:''}
-  <div class="seats">${seats}</div>
+  <div class="opps">${seats}</div>
   <div class="center">
-    <div class="pile"><span style="position:relative">${cardHTML({r:'A',s:'s'},'mid',false)}<span class="count">${st.deck.length}</span></span><span>Pioche</span></div>
-    <div class="pile">${tp?cardHTML(tp,'mid',true):'<span class="slot mid empty"></span>'}<span>Défausse</span></div>
+    <div class="pile"><span style="position:relative">${cardHTML({r:'A',s:'s'},'mid',false)}<span class="count">${st.deck.length}</span></span><span class="lbl">Pioche</span></div>
+    <div class="pile">${tp?cardHTML(tp,'mid',true):'<span class="slot mid empty"></span>'}<span class="lbl">Défausse</span></div>
     ${heldHTML}
   </div>
   ${banner}
-  <div class="status">${status}</div>
-  <div class="actions">${actions}${coller}</div>
-  ${mine}
-  ${hostbar}
-  <ul class="log">${(st.log||[]).slice(0,4).map(l=>`<li>${esc(l.t)}</li>`).join('')}</ul>`;
+  <div class="status"><span>${status}</span></div>
+  <div class="dock">
+    <div class="actions">${actions}${coller}</div>
+    ${mine}
+    ${last?`<div class="log">${esc(last.t)}</div>`:''}
+    ${hostbar}
+  </div></div>`;
 }
 function renderScores(){
   const st=G, over=st.phase==='over';
   const ranked=st.players.map((p,k)=>({p,k})).sort((a,b)=>a.p.total-b.p.total);
   const best=ranked[0].p.total;
-  app.innerHTML=`
-  <div class="top"><span class="brand">Tamalou</span><span class="meta">Table ${esc(st.code)}</span><button class="link" data-a="quit">Quitter</button></div>
+  app.innerHTML=`<div class="page">
+  <div class="bar"><span class="brand">Tamalou</span><span class="meta">Table ${esc(st.code)}</span><button class="link" data-a="quit">Quitter</button></div>
   <div class="panel" style="text-align:center">
     <h2>${over?`${esc(ranked.filter(r=>r.p.total===best).map(r=>r.p.name).join(' et '))} ${ranked.filter(r=>r.p.total===best).length>1?'gagnent':'gagne'} la partie`:`Fin de la manche ${st.round}`}</h2>
     <p class="note">${st.caller!==null?esc(st.players[st.caller].name)+(st.callerWon?' avait bien le plus petit total : 0 point.':' n’avait pas le plus petit total : +10.'):''}</p>
@@ -638,7 +649,7 @@ function renderScores(){
       <div class="tot">${p.total}</div>
       <div class="cards">${p.slots.filter(Boolean).map(c=>cardHTML(c,'mini',true)).join('')||'<span class="det">Aucune carte</span>'}</div>
     </div>`).join('')}</div>
-  ${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}`;
+  ${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>`;
 }
 
 /* ---------- Events ---------- */

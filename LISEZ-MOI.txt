@@ -1,0 +1,77 @@
+TAMALOU EN LIGNE — MISE EN PLACE (une seule fois, environ 15 minutes)
+=====================================================================
+
+Même principe que Mercato Duel : le site est hébergé sur Netlify, le code est
+sur GitHub, et les parties passent par Supabase. Vos amis n'ont besoin d'aucun
+compte : ils ouvrent le lien, entrent un prénom et le code de la table.
+
+ÉTAPE 1 — Supabase (base de données)
+------------------------------------
+1. Ouvrez https://supabase.com et connectez-vous.
+2. Ouvrez votre projet existant (celui de Mercato Duel), ou créez-en un nouveau.
+3. Menu de gauche > SQL Editor > New query.
+4. Ouvrez le fichier tamalou.sql (dossier tamalou-supabase), copiez tout son
+   contenu, collez-le dans l'éditeur, puis cliquez sur Run.
+   Vous devez voir « Success ».
+5. Menu de gauche > Project Settings > API.
+   Copiez :
+   - Project URL  (ex. https://xxxxxxxx.supabase.co)
+   - la clé « anon public » (longue suite de caractères commençant par eyJ...)
+
+ÉTAPE 2 — Le fichier config.js
+------------------------------
+1. Ouvrez config.js (dossier tamalou-site) avec le Bloc-notes.
+2. Vérifiez que supabaseUrl correspond à votre Project URL.
+3. Remplacez COLLEZ_ICI_VOTRE_CLE_ANON_PUBLIC par votre clé anon, en gardant
+   les guillemets. Enregistrez.
+   (Cette clé est faite pour être publique : c'est normal qu'elle soit dans le site.)
+
+ÉTAPE 3 — GitHub (le code)
+--------------------------
+1. Ouvrez https://github.com/new (connecté avec votre compte adouib).
+2. Repository name : tamalou. Cochez Public. Cliquez sur Create repository.
+3. Sur la page du dépôt, cliquez sur « uploading an existing file ».
+4. Glissez-déposez TOUT le contenu du dossier tamalou-site
+   (index.html, config.js, sw.js, manifest.webmanifest, netlify.toml,
+   LISEZ-MOI.txt et le dossier icons).
+5. Cliquez sur Commit changes.
+
+ÉTAPE 4 — Netlify (le site)
+---------------------------
+1. Ouvrez https://app.netlify.com > Add new site > Import an existing project.
+2. Choisissez GitHub, puis le dépôt adouib/tamalou.
+3. Laissez les réglages par défaut (Publish directory : « . ») et cliquez sur
+   Deploy. Après une minute, Netlify vous donne une adresse du type
+   https://nom-aleatoire.netlify.app
+4. Facultatif : Site configuration > Change site name pour choisir un nom
+   plus simple, par exemple tamalou-amis.netlify.app
+
+ÉTAPE 5 — Jouer
+---------------
+1. Ouvrez l'adresse Netlify sur votre téléphone. Pour l'installer comme une
+   application : Partager > Sur l'écran d'accueil (iPhone) ou menu > Installer
+   l'application (Android).
+2. Entrez votre prénom, « Ouvrir une table », et envoyez le code à vos amis.
+3. Vos amis ouvrent la même adresse, entrent leur prénom et le code.
+
+METTRE À JOUR PLUS TARD
+-----------------------
+Quand Claude vous donne un nouveau fichier (par exemple un nouvel index.html) :
+GitHub > dépôt tamalou > Add file > Upload files > glissez le fichier > Commit.
+Netlify met le site à jour tout seul en une minute.
+
+RÈGLES DU JEU PROGRAMMÉES
+-------------------------
+Joker −1 (×2) · Rois rouges 0 · As 1 · 2 à 10 leur valeur · Valet, Dame,
+Roi de trèfle 10 · Roi de pique 21.
+Pouvoirs (facultatifs, seulement si la carte piochée est défaussée) :
+7 : regarder une de ses cartes · 8 : regarder une carte adverse ·
+9 : regarder une de ses cartes et une carte adverse, puis les échanger
+(obligatoire une fois les cartes vues) · 10 : échanger sans les voir deux
+cartes de deux autres joueurs.
+Collage à tout moment, même pendant le tour d'un autre ou pendant un pouvoir,
+tant que la carte visible sur la défausse est de la même valeur ; plusieurs
+joueurs peuvent coller à la suite ; carte adverse collée = vous lui donnez une
+des vôtres ; erreur = carte de pénalité. Tamalou en début de tour ;
+0 point si strictement le plus petit total, sinon total +10. Partie finie au-delà
+de 100 points.

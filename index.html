@@ -47,7 +47,7 @@ button:focus-visible, input:focus-visible{ outline:3px solid var(--accent); outl
 .fan .slot:nth-child(3){ transform:rotate(5deg); } .fan .slot:nth-child(4){ transform:rotate(16deg); }
 .panel{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:10px; }
 .panel h2{ font-size:16px; margin:0; font-weight:600; }
-label.f{ font-size:13px; color:var(--mute); display:flex; flex-direction:column; gap:6px; }
+label.field{ font-size:13px; color:var(--mute); display:flex; flex-direction:column; gap:6px; }
 input{ font:inherit; font-size:17px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--text); width:100%; }
 input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num); font-size:22px; text-align:center; }
 .row{ display:flex; gap:10px; }
@@ -76,13 +76,13 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .back::after{ content:""; position:absolute; inset:18% 20%; border-radius:4px; border:1.5px solid rgba(200,240,60,.9); background:repeating-linear-gradient(135deg,transparent 0 5px,rgba(200,240,60,.18) 5px 6px); }
 .slot.mini .back{ box-shadow:inset 0 0 0 1.5px #fff, 0 1px 3px rgba(0,0,0,.35); }
 .slot.mini .back::after{ inset:22% 24%; border-width:1px; background:none; opacity:.6; }
-.f{ position:absolute; inset:0; border-radius:inherit; background:var(--card); color:var(--ink); box-shadow:0 2px 5px rgba(0,0,0,.4); font-family:var(--num); font-weight:700; }
-.f.red{ color:var(--red); }
-.f.joker{ color:#4C6B0A; background:linear-gradient(160deg,#F7FFD6,#E4F79A); }
-.f .ix{ position:absolute; top:6%; left:9%; font-size:clamp(14px,4.2vw,19px); line-height:.9; display:flex; flex-direction:column; align-items:center; }
-.f .ix i{ font-style:normal; font-size:.72em; margin-top:1px; }
-.f .ix.rot{ top:auto; left:auto; bottom:6%; right:9%; transform:rotate(180deg); }
-.f .pip{ position:absolute; inset:0; display:grid; place-items:center; font-size:clamp(24px,7vw,34px); }
+.slot .f{ position:absolute; inset:0; border-radius:inherit; background:var(--card); color:var(--ink); box-shadow:0 2px 5px rgba(0,0,0,.4); font-family:var(--num); font-weight:700; }
+.slot .f.red{ color:var(--red); }
+.slot .f.joker{ color:#4C6B0A; background:linear-gradient(160deg,#F7FFD6,#E4F79A); }
+.slot .f .ix{ position:absolute; top:6%; left:9%; font-size:clamp(14px,4.2vw,19px); line-height:.9; display:flex; flex-direction:column; align-items:center; }
+.slot .f .ix i{ font-style:normal; font-size:.72em; margin-top:1px; }
+.slot .f .ix.rot{ top:auto; left:auto; bottom:6%; right:9%; transform:rotate(180deg); }
+.slot .f .pip{ position:absolute; inset:0; display:grid; place-items:center; font-size:clamp(24px,7vw,34px); }
 .slot.mini .f .ix{ position:static; height:100%; justify-content:center; font-size:11px; line-height:1; }
 .slot.mini .f .ix i{ display:none; }
 .slot.mini .f .pip,.slot.mini .f .ix.rot{ display:none; }
@@ -542,7 +542,7 @@ function renderHome(){
   <p>Le jeu de cartes où le plus petit score gagne. Ouvrez une table, donnez le code à vos amis, jouez chacun sur son téléphone.</p></div>
   ${!SB?`<div class="panel"><h2>Configuration manquante</h2><p class="note">Le fichier <b>config.js</b> ne contient pas encore l’adresse et la clé « anon » de votre projet Supabase. Suivez le LISEZ-MOI.</p></div>`:`
   <div class="panel">
-    <label class="f">Votre prénom<input id="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name)}"></label>
+    <label class="field">Votre prénom<input id="name" maxlength="16" autocomplete="nickname" value="${esc(ui.name)}"></label>
     <button class="btn main wide" data-a="create">Ouvrir une table</button>
     ${ui.err?`<p class="note err">${esc(ui.err)}</p>`:''}
   </div>

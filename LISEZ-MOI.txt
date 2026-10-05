@@ -60,6 +60,21 @@ Quand Claude vous donne un nouveau fichier (par exemple un nouvel index.html) :
 GitHub > dépôt tamalou > Add file > Upload files > glissez le fichier > Commit.
 Netlify met le site à jour tout seul en une minute.
 
+MODES ET MESSAGES
+-----------------
+Dans le salon, l'hôte choisit le mode : Classique (on ne colle que ses propres
+cartes, TamTam arrête la manche sur place) ou Ultime ⚡ (une seule carte collée
+par défausse, on peut coller la carte d'un adversaire et lui donner une des
+siennes, 20 secondes par tour, dernier tour après TamTam où l'annonceur peut
+être attaqué). Le bouton 💬 ouvre les messages entre joueurs.
+
+JOUEURS MACHINE
+---------------
+Dans le salon (ou entre deux manches), l'hôte peut ajouter des joueurs machine
+(🤖) avec « + Ajouter un joueur machine », pour jouer seul ou compléter une
+table d'amis. Six joueurs maximum. C'est le téléphone de l'hôte qui fait jouer
+les machines : il doit rester sur la page pendant la partie.
+
 RÈGLES DU JEU PROGRAMMÉES
 -------------------------
 Joker −1 (×2) · Rois rouges 0 · As 1 · 2 à 10 leur valeur · Valet, Dame,

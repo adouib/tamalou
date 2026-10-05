@@ -70,7 +70,7 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .slot.big{ width:clamp(62px,19vw,84px); }
 .hand{ position:relative; }
 .hand .extra{ position:absolute; bottom:calc(100% + 6px); left:0; right:0; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.seat .extra{ display:flex; gap:4px; flex-wrap:wrap; padding-bottom:3px; border-bottom:1px dashed var(--line); margin-bottom:1px; }
+.seat .extra{ display:flex; gap:4px; flex-wrap:wrap; padding-top:3px; border-top:1px dashed var(--line); margin-top:1px; }
 .slot.mid{ width:clamp(54px,15vw,66px); }
 .slot.mini{ width:24px; border-radius:4px; }
 .slot.empty{ border:1.5px dashed rgba(255,255,255,.16); }
@@ -102,11 +102,12 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 /* ---------- Table ---------- */
 .screen{ min-height:100dvh; display:flex; flex-direction:column; padding:10px 14px 12px; gap:10px; }
 .bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:32px; }
-.bar .brand{ font-family:var(--num); font-weight:900; font-size:20px; }
-.bar .meta{ color:var(--mute); font-size:12px; white-space:nowrap; }
+.bar .brand{ font-family:var(--num); font-weight:900; font-size:18px; }
+.bar .meta{ color:var(--mute); font-size:11px; white-space:nowrap; }
 .bar .links{ display:flex; gap:2px; white-space:nowrap; align-items:center; }
 .bar .link[data-a="mute"]{ text-decoration:none; font-size:15px; }
-.bar .link{ font-size:13px; }
+.bar .link{ font-size:12px; padding:6px 3px; }
+.bar .link[data-a="chat"]{ text-decoration:none; font-size:14px; }
 .drawrow{ display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; font-size:12px; }
 .drawrow b{ color:var(--accent); }
 .drawc{ display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; color:var(--mute); }
@@ -151,6 +152,20 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 @media (prefers-reduced-motion: no-preference){ .slot.lift{ animation:lift 2.4s ease both; } @keyframes lift{ 0%{ transform:none } 20%{ transform:translateY(-16px) scale(1.12) } 75%{ transform:translateY(-16px) scale(1.12) } 100%{ transform:none } } }
 .slot.lift .back, .slot.lift .f{ box-shadow:0 0 0 3px var(--accent), 0 10px 24px rgba(0,0,0,.6); }
 .spark{ text-shadow:0 0 6px rgba(200,240,60,.9); }
+#sheet{ position:fixed; left:0; right:0; bottom:0; z-index:45; display:none; }
+#sheet .sheetin{ max-width:520px; margin:0 auto; background:var(--surface); border:1px solid var(--line); border-radius:18px 18px 0 0; padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:10px; box-shadow:0 -10px 30px rgba(0,0,0,.5); }
+#sheet .sheethead{ display:flex; justify-content:space-between; align-items:center; }
+#sheet .msgs{ max-height:160px; overflow:auto; display:flex; flex-direction:column; gap:4px; font-size:14px; }
+#sheet .msg b{ color:var(--accent); font-weight:600; }
+#sheet .presets{ display:flex; gap:6px; flex-wrap:wrap; }
+#sheet .presets .chip{ padding:6px 10px; font-size:13px; }
+#bubble{ position:fixed; top:calc(10px + env(safe-area-inset-top,0px)); left:50%; transform:translate(-50%,-30px); background:var(--text); color:var(--ink); padding:9px 14px; border-radius:16px; font-size:14px; max-width:86vw; z-index:46; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 8px 24px rgba(0,0,0,.45); }
+#bubble.on{ opacity:1; transform:translate(-50%,0); }
+#bubble b{ color:#5B7A00; font-weight:700; }
+.timer{ display:inline-block; margin-left:6px; font-size:12px; color:var(--mute); font-variant-numeric:tabular-nums; }
+.timer.hurry{ color:var(--danger); font-weight:700; }
+.taunt{ display:block; margin-top:6px; font-size:15px; font-weight:600; opacity:.95; animation:wobble 1.2s ease .3s both; }
+@keyframes wobble{ 0%{ transform:rotate(0) } 25%{ transform:rotate(-3deg) scale(1.05) } 50%{ transform:rotate(3deg) scale(1.05) } 75%{ transform:rotate(-2deg) } 100%{ transform:none } }
 .slot.mini.flash .back, .slot.mini.flash .f{ box-shadow:0 0 0 2px var(--accent), 0 0 10px rgba(200,240,60,.7); }
 @media (prefers-reduced-motion: no-preference){ .slot .back, .slot .f{ transition:box-shadow .3s; } }
 .dock{ margin-top:auto; display:flex; flex-direction:column; gap:8px; }
@@ -242,6 +257,7 @@ const RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const LABEL={A:'A',J:'V',Q:'D',K:'R',JK:'★'};
 const SUIT={h:'♥',d:'♦',s:'♠',c:'♣',x:''};
 const ART={K:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M13 82 Q13 58 30 56 Q47 58 47 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><path d="M22 60 L30 82 L38 60" fill="#FFF" opacity=".85"/><path d="M50 22 L54 70" stroke="#A9AFB8" stroke-width="3.2" stroke-linecap="round"/><path d="M46 60 L58 60" stroke="#E3B341" stroke-width="3.2" stroke-linecap="round"/><path d="M20 50 Q30 66 40 50 L40 44 L20 44Z" fill="#15181F"/><circle cx="30" cy="40" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="39" r="1.3" fill="#15181F"/><circle cx="34" cy="39" r="1.3" fill="#15181F"/><path d="M14 30 L18 15 L25 25 L30 10 L35 25 L42 15 L46 30Z" fill="#E3B341" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="30" cy="10" r="2.4" fill="currentColor"/><circle cx="18" cy="15" r="2" fill="currentColor"/><circle cx="42" cy="15" r="2" fill="currentColor"/></svg>`,Q:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M11 82 Q13 56 30 54 Q47 56 49 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><path d="M24 58 Q30 72 36 58" fill="none" stroke="#FFF" stroke-width="1.6" opacity=".8"/><path d="M19 36 Q14 50 18 60 Q22 48 22 38Z" fill="#15181F"/><path d="M41 36 Q46 50 42 60 Q38 48 38 38Z" fill="#15181F"/><circle cx="30" cy="40" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="39" r="1.3" fill="#15181F"/><circle cx="34" cy="39" r="1.3" fill="#15181F"/><path d="M26 45 Q30 48 34 45" fill="none" stroke="#15181F" stroke-width="1.2" stroke-linecap="round"/><path d="M19 30 L22 20 L27 27 L30 16 L33 27 L38 20 L41 30Z" fill="#E3B341" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="30" cy="16" r="2.2" fill="currentColor"/><path d="M48 68 L48 54" stroke="#3B8A4E" stroke-width="2" stroke-linecap="round"/><circle cx="48" cy="52" r="3.2" fill="currentColor"/><circle cx="44.5" cy="55" r="2.6" fill="currentColor"/><circle cx="51.5" cy="55" r="2.6" fill="currentColor"/><circle cx="48" cy="55" r="1.6" fill="#E3B341"/></svg>`,J:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M13 82 Q13 58 30 56 Q47 58 47 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><rect x="26" y="60" width="8" height="22" fill="#FFF" opacity=".85"/><path d="M52 14 L52 76" stroke="#7B5B3A" stroke-width="2.6" stroke-linecap="round"/><path d="M52 14 L46 20 L52 30 L58 22Z" fill="#A9AFB8" stroke="#15181F" stroke-width="1.2" stroke-linejoin="round"/><circle cx="30" cy="42" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="41" r="1.3" fill="#15181F"/><circle cx="34" cy="41" r="1.3" fill="#15181F"/><path d="M18 36 Q20 20 34 22 Q44 24 42 34 Q30 30 18 36Z" fill="currentColor" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><path d="M38 24 Q46 12 50 8 Q46 20 40 28" fill="#E3B341" stroke="#15181F" stroke-width="1.2" stroke-linejoin="round"/></svg>`,JK:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M12 82 Q14 58 30 56 Q46 58 48 82Z" fill="#7BC043" stroke="#15181F" stroke-width="1.3"/><path d="M22 58 L30 70 L38 58" fill="#D93C44"/><circle cx="30" cy="42" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="41" r="1.3" fill="#15181F"/><circle cx="34" cy="41" r="1.3" fill="#15181F"/><path d="M24 45 Q30 51 36 45" fill="none" stroke="#15181F" stroke-width="1.4" stroke-linecap="round"/><path d="M19 36 Q10 20 14 8 Q22 20 24 30 Q28 10 30 4 Q32 10 36 30 Q38 20 46 8 Q50 20 41 36Z" fill="#D93C44" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="14" cy="8" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/><circle cx="30" cy="4" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/><circle cx="46" cy="8" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/></svg>`};
+const BOT_NAMES=['Nadia 🤖','Mehdi 🤖','Lina 🤖','Sofiane 🤖','Amel 🤖','Yacine 🤖'];
 const POWER_TXT={own:'regarder une de vos cartes',opp:'regarder une carte adverse',nine:'regarder deux cartes et échanger',ten:'échanger deux cartes adverses'};
 
 function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v);}catch(e){ return null; } }
@@ -253,7 +269,8 @@ function cname(c){ return c.r==='JK'?'un Joker':(LABEL[c.r]||c.r)+SUIT[c.s]; }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newDeck(){ const d=[]; let id=0; for(const s of 'hdsc') for(const r of RANKS) d.push({r,s,id:id++}); d.push({r:'JK',s:'x',id:id++},{r:'JK',s:'x',id:id++}); return shuffle(d); }
 function count(p){ return p.slots.filter(Boolean).length; }
-function mi(st){ return st?st.players.findIndex(p=>p.id===ME):-1; }
+let ACTOR=null;
+function mi(st){ const who=ACTOR||ME; return st?st.players.findIndex(p=>p.id===who):-1; }
 function top(st){ return st.discard.length?st.discard[st.discard.length-1]:null; }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 let toastT;
@@ -272,7 +289,7 @@ function drawCard(st){
 function deal(st){
   st.round=(st.round||0)+1;
   const d=newDeck();
-  st.players.forEach(p=>{ p.slots=[d.pop(),d.pop(),d.pop(),d.pop()]; p.ready=false; p.hand=null; });
+  st.players.forEach(p=>{ p.slots=[d.pop(),d.pop(),d.pop(),d.pop()]; p.ready=!!p.bot; p.hand=null; if(p.bot) p.bot.known={2:p.slots[2].id,3:p.slots[3].id}; });
   // first visible card must be worth more than 1
   const rejected=[]; let first=d.pop(); while(first && val(first)<=1){ rejected.push(first); first=d.pop(); }
   st.discard=[first]; st.deck=shuffle(d.concat(rejected));
@@ -284,13 +301,15 @@ function deal(st){
     while(pool.length>1 && guard++<10){ const vals=pool.map(k=>{ cards[k]=dd.pop(); return val(cards[k]); }); const mn=Math.min(...vals); const keep=pool.filter((k,j)=>vals[j]===mn); if(keep.length===pool.length){ pool=[pool[Math.floor(Math.random()*pool.length)]]; } else pool=keep; }
     st.turn=pool[0]; st.draw={cards:st.players.map((_,k)=>cards[k]||null),winner:pool[0]};
   } else st.turn=st.nextStarter;
-  st.phase='peek'; st.step='start';
+  st.phase='peek'; st.step='start'; st.collageDone=false; st.turnStart=Date.now();
   st.held=null; st.heldFrom=null; st.power=null; st.nineLook=null; st.caller=null; st.gives=[]; st.callerWon=null;
   log(st,`Manche ${st.round} distribuée`);
 }
 function endTurn(st){
   st.held=null; st.heldFrom=null; st.power=null; st.nineLook=null; st.step='start';
-  st.turn=(st.turn+1)%st.players.length;
+  const nx=(st.turn+1)%st.players.length;
+  if(st.caller!==null && nx===st.caller){ endRound(st); return; }
+  st.turn=nx; st.turnStart=Date.now();
 }
 function endRound(st){
   st.phase='reveal'; st.held=null; st.power=null; st.nineLook=null; st.step='start';
@@ -312,7 +331,8 @@ function endRound(st){
 }
 function checkEmpty(st,k){
   if(st.phase==='play' && st.caller===null && count(st.players[k])===0){
-    st.caller=k; log(st,`${st.players[k].name} n’a plus de carte : TamTam automatique`); endRound(st);
+    st.caller=k; log(st,`${st.players[k].name} n’a plus de carte : TamTam automatique`);
+    if(st.mode!=='ultime' || st.turn===k) endRound(st);
   }
 }
 function needTurn(st,steps){
@@ -331,6 +351,16 @@ const A={
     const start=st.phase==='lobby'?0:Math.max(0,...st.players.map(p=>p.total||0));
     st.players.push({id:ME,name,slots:[],ready:false,total:start,last:0,hand:null});
     log(st,`${name} rejoint la table`);
+  },
+  addBot(st){
+    if(st.host!==ME) return 'Seul l’hôte ajoute des bots.';
+    if(!['lobby','reveal','over'].includes(st.phase)) return 'Ajoutez les bots entre deux manches.';
+    if(st.players.length>=6) return 'La table est complète (6 joueurs).';
+    const used=st.players.map(p=>p.name);
+    const name=BOT_NAMES.find(n=>!used.includes(n))||('Bot '+(st.players.length+1));
+    const start=st.phase==='lobby'?0:Math.max(0,...st.players.map(p=>p.total||0));
+    st.players.push({id:'bot-'+Math.random().toString(36).slice(2,9),name,bot:{known:{}},slots:[],ready:true,total:start,last:0,hand:null});
+    log(st,`${name} s’installe à la table`);
   },
   setLimit(st,{limit}){
     if(st.host!==ME) return 'Seul l’hôte choisit le total.';
@@ -352,7 +382,7 @@ const A={
     st.gives=(st.gives||[]).filter(g=>g.from!==i&&g.to!==i).map(g=>({from:fix(g.from),to:fix(g.to),s:g.s}));
     if(st.nineLook&&(st.nineLook.p===i)) st.nineLook=null; else if(st.nineLook) st.nineLook.p=fix(st.nineLook.p);
     if(st.draw){ st.draw.cards.splice(i,1); st.draw.winner=fix(st.draw.winner); }
-    if(st.host===ME && st.players.length) st.host=st.players[0].id;
+    if(st.host===p.id && st.players.length){ const h=st.players.find(q=>!q.bot)||st.players[0]; st.host=h.id; }
     if(st.players.length<2){
       if(st.phase==='play'){ st.caller=null; endRound(st); }
       else if(st.phase==='peek'){ st.phase='lobby'; st.players.forEach(q=>{q.slots=[];}); }
@@ -368,11 +398,11 @@ const A={
   ready(st){
     const i=mi(st); if(st.phase!=='peek'||i<0) return;
     st.players[i].ready=true;
-    if(st.players.every(p=>p.ready)){ st.phase='play'; log(st,`${st.players[st.turn].name} commence`); }
+    if(st.players.every(p=>p.ready)){ st.phase='play'; st.turnStart=Date.now(); log(st,`${st.players[st.turn].name} commence`); }
   },
   forceStart(st){
     if(st.host!==ME||st.phase!=='peek') return;
-    st.players.forEach(p=>p.ready=true); st.phase='play'; log(st,`${st.players[st.turn].name} commence`);
+    st.players.forEach(p=>p.ready=true); st.phase='play'; st.turnStart=Date.now(); log(st,`${st.players[st.turn].name} commence`);
   },
   draw(st){
     const t=needTurn(st,['start']); if(t.err) return t.err;
@@ -382,7 +412,7 @@ const A={
   take(st){
     const t=needTurn(st,['start']); if(t.err) return t.err;
     if(!st.discard.length) return 'La défausse est vide.';
-    st.held=st.discard.pop(); st.heldFrom='discard'; st.step='fromDiscard';
+    st.held=st.discard.pop(); st.heldFrom='discard'; st.step='fromDiscard'; st.collageDone=false;
     log(st,`${t.p.name} prend ${cname(st.held)} dans la défausse`);
   },
   swap(st,{s}){
@@ -392,13 +422,13 @@ const A={
       if(count(t.p)>0 || s>=t.p.slots.length) return 'Choisissez une de vos cartes.';
       t.p.slots[s]=st.held; log(st,`${t.p.name} repose une carte`); endTurn(st); return;
     }
-    t.p.slots[s]=st.held; st.discard.push(old);
+    t.p.slots[s]=st.held; st.discard.push(old); st.collageDone=false; if(t.p.bot) t.p.bot.known[s]=st.held.id;
     log(st,`${t.p.name} échange une carte et défausse ${cname(old)}`);
     endTurn(st);
   },
   discardHeld(st){
     const t=needTurn(st,['drawn']); if(t.err) return t.err;
-    const c=st.held; st.discard.push(c); st.held=null; st.heldFrom=null;
+    const c=st.held; st.discard.push(c); st.held=null; st.heldFrom=null; st.collageDone=false;
     log(st,`${t.p.name} défausse ${cname(c)}`);
     const pw=powerAvail(st,c,t.i);
     if(pw){ st.step='power'; st.power=pw; } else endTurn(st);
@@ -407,16 +437,17 @@ const A={
     const t=needTurn(st,['power']); if(t.err) return t.err;
     if(st.power!==kind) return;
     if(kind==='own' && p!==t.i) return;
-    if(kind==='opp' && (p===t.i||p===st.caller)) return;
+    if(kind==='opp' && p===t.i) return;
     if(!st.players[p]||!st.players[p].slots[s]) return 'Cette carte n’existe plus.';
     log(st, kind==='own'?`${t.p.name} regarde une de ses cartes`:`${t.p.name} regarde une carte de ${st.players[p].name}`);
+    if(t.p.bot&&kind==='own') t.p.bot.known[s]=st.players[p].slots[s].id;
     st.fx={ids:[st.players[p].slots[s].id],seq:(st.seq||0)+1};
     endTurn(st);
   },
   nineLook(st,{s,p,u}){
     const t=needTurn(st,['power']); if(t.err) return t.err;
     if(st.power!=='nine'||st.nineLook) return;
-    const o=st.players[p]; if(!o||p===t.i||p===st.caller||!o.slots[u]) return 'Carte non valide.';
+    const o=st.players[p]; if(!o||p===t.i||!o.slots[u]) return 'Carte non valide.';
     if(!t.p.slots[s]) return 'Cette carte n’existe plus.';
     st.nineLook={s,p,u,ids:[t.p.slots[s].id,o.slots[u].id]}; st.fx={ids:st.nineLook.ids,seq:(st.seq||0)+1};
     log(st,`${t.p.name} regarde une de ses cartes et une carte de ${o.name}`);
@@ -427,14 +458,14 @@ const A={
     const {s,p,u,ids}=st.nineLook, o=st.players[p];
     const a=t.p.slots[s], b=o&&o.slots[u];
     if(!a||!b||a.id!==ids[0]||b.id!==ids[1]){ log(st,`Échange impossible : une des cartes a été collée`); endTurn(st); return; }
-    [t.p.slots[s],o.slots[u]]=[o.slots[u],t.p.slots[s]]; log(st,`${t.p.name} échange sa carte avec celle de ${o.name}`);
+    [t.p.slots[s],o.slots[u]]=[o.slots[u],t.p.slots[s]]; if(t.p.bot) t.p.bot.known[s]=t.p.slots[s].id; log(st,`${t.p.name} échange sa carte avec celle de ${o.name}`);
     endTurn(st);
   },
   ten(st,{p,u,q,v}){
     const t=needTurn(st,['power']); if(t.err) return t.err;
     if(st.power!=='ten') return;
     const a=st.players[p], b=st.players[q];
-    if(!a||!b||p===q||p===t.i||q===t.i||p===st.caller||q===st.caller) return 'Choisissez deux adversaires différents.';
+    if(!a||!b||p===q||p===t.i||q===t.i) return 'Choisissez deux adversaires différents.';
     if(!a.slots[u]||!b.slots[v]) return 'Une des cartes n’existe plus.';
     [a.slots[u],b.slots[v]]=[b.slots[v],a.slots[u]];
     log(st,`${t.p.name} échange une carte de ${a.name} avec une carte de ${b.name}`); endTurn(st);
@@ -446,20 +477,33 @@ const A={
   },
   tamalou(st){
     const t=needTurn(st,['start']); if(t.err) return t.err;
-    st.caller=t.i; log(st,`${t.p.name} annonce TamTam !`); endRound(st);
+    if(st.caller!==null) return 'TamTam a déjà été annoncé.';
+    st.caller=t.i; log(st,`${t.p.name} annonce TamTam !`);
+    if(st.mode==='ultime'){ endTurn(st); } else endRound(st);
+  },
+  setMode(st,{mode}){
+    if(st.host!==ME) return 'Seul l’hôte choisit le mode.';
+    if(st.phase!=='lobby') return 'Le mode se choisit avant la première manche.';
+    st.mode=mode==='ultime'?'ultime':'classic';
+  },
+  chat(st,{text}){
+    const i=mi(st); if(i<0) return 'Rejoignez la table pour écrire.';
+    const t=String(text||'').trim().slice(0,80); if(!t) return;
+    st.chat=((st.chat||[]).concat([{id:Math.random().toString(36).slice(2,9),from:st.players[i].name,text:t,ts:Date.now()}])).slice(-30);
   },
   coller(st,{p,s,rank}){
     const i=mi(st); if(i<0) return 'Vous ne jouez pas dans cette partie.';
     if(st.phase!=='play') return 'On ne peut pas coller maintenant.';
-    if(st.caller===i) return 'Votre jeu est gelé après votre Tamalou.';
-    if(st.caller===p) return 'Le jeu de celui qui a annoncé Tamalou est gelé.';
+    const ult=st.mode==='ultime';
+    if(!ult && p!==i) return 'En mode Classique, on ne colle que ses propres cartes.';
     if((st.gives||[]).some(g=>g.from===i)) return 'Donnez d’abord votre carte.';
     const tp=top(st); if(!tp) return 'La défausse est vide.';
     if(tp.r!==rank) return 'Trop tard : la défausse a changé.';
     const me=st.players[i], o=st.players[p], c=o&&o.slots[s];
     if(!c) return 'Trop tard : cette carte est déjà partie.';
+    if(ult && st.collageDone && c.r===rank) return 'Trop tard : une seule carte collée par défausse en mode Ultime.';
     if(c.r===rank){
-      o.slots[s]=null; st.discard.push(c);
+      o.slots[s]=null; st.discard.push(c); st.collageDone=true;
       if(p===i) log(st,`${me.name} colle ${cname(c)}`);
       else { log(st,`${me.name} colle ${cname(c)} de ${o.name}`); if(count(me)>0) st.gives.push({from:i,to:p,s}); }
       checkEmpty(st,p);
@@ -480,8 +524,8 @@ const A={
   skipTurn(st){
     if(st.host!==ME||st.phase!=='play') return;
     const p=st.players[st.turn];
-    if(st.held) st.discard.push(st.held);
-    log(st,`L’hôte passe le tour de ${p.name}`); endTurn(st);
+    if(st.held){ st.discard.push(st.held); st.collageDone=false; }
+    log(st, st.mode==='ultime'?`Temps écoulé : le tour de ${p.name} est passé`:`L’hôte passe le tour de ${p.name}`); endTurn(st);
   }
 };
 
@@ -490,13 +534,13 @@ const TABLE='tamalou_games';
 function cfgOk(){ const c=window.TAMALOU_CONFIG||{}; return !!(c.supabaseUrl&&c.supabaseAnonKey&&!/COLLEZ/i.test(c.supabaseAnonKey)&&!/COLLEZ|VOTRE/i.test(c.supabaseUrl)); }
 async function fetchGame(code){ const {data,error}=await SB.from(TABLE).select('state,version').eq('code',code).maybeSingle(); if(error) throw error; return data; }
 function applyRow(row){ if(!row||!row.state) return false; if(row.version<GV) return false; GV=row.version; G=row.state; return true; }
-async function mutate(fn){
+async function mutate(fn,actor){
   if(!CODE||!SB) return;
   for(let n=0;n<10;n++){
     let row; try{ row=await fetchGame(CODE); }catch(e){ toast('Connexion instable, réessayez.'); return; }
     if(!row){ toast('Cette partie n’existe plus.'); return; }
     const st=JSON.parse(JSON.stringify(row.state));
-    const res=fn(st);
+    ACTOR=actor||ME; let res; try{ res=fn(st); } finally{ ACTOR=ME; }
     if(typeof res==='string'){ toast(res); return; }
     st.seq=(st.seq||0)+1;
     const {data,error}=await SB.from(TABLE).update({state:st,version:row.version+1,updated_at:new Date().toISOString()}).eq('code',CODE).eq('version',row.version).select('version');
@@ -507,7 +551,9 @@ async function mutate(fn){
   toast('La table est très occupée, réessayez.');
 }
 let busy=false;
-async function act(name,args){ if(busy) return; busy=true; try{ return await mutate(st=>A[name](st,args||{})); } finally{ busy=false; } }
+async function actCore(name,args,actor){ if(busy) return false; busy=true; try{ return await mutate(st=>A[name](st,args||{}),actor); } finally{ busy=false; } }
+function act(name,args){ return actCore(name,args,ME); }
+async function actAs(id,name,args){ for(let n=0;n<8;n++){ if(!busy) return actCore(name,args,id); await sleep(150); } }
 async function checkConn(){
   if(!SB){ ui.conn={ok:false,msg:'config.js incomplet'}; return; }
   try{
@@ -539,7 +585,7 @@ function closeGame(){ closeChannel(); CODE=null; G=null; GV=0; ls('tamalou-code'
 function newState(c,name){
   return {code:c,host:ME,phase:'lobby',players:[{id:ME,name,slots:[],ready:false,total:0,last:0,hand:null}],
     deck:[],discard:[],turn:0,step:'start',held:null,heldFrom:null,power:null,caller:null,gives:[],
-    log:[{t:`${name} ouvre la table`,ts:Date.now()}],round:0,seq:0,limit:100,nextStarter:null,draw:null,created:Date.now()};
+    log:[{t:`${name} ouvre la table`,ts:Date.now()}],round:0,seq:0,limit:100,mode:'classic',chat:[],nextStarter:null,draw:null,created:Date.now()};
 }
 async function createGame(){
   const name=ui.name.trim(); if(!name) return fail('Entrez votre prénom.');
@@ -624,7 +670,7 @@ function slotHTML(st,p,s,size,it){
 }
 function rulesHTML(){
   return `<div class="rules">
-  <p class="note">Le plus petit total gagne. Chacun a 4 cartes cachées et regarde ses 2 cartes du bas au début.</p>
+  <p class="note">Le plus petit total gagne. Chacun a 4 cartes cachées et regarde ses 2 cartes du bas au début. L’hôte peut ajouter des joueurs machine (🤖) pour compléter la table ou jouer seul.</p>
   <table>
   <tr><td>Joker</td><td>−1 point (2 dans le jeu). Mieux vaut le garder que le coller.</td></tr>
   <tr><td>As</td><td>1 point. Les cartes 2 à 10 valent leur chiffre.</td></tr>
@@ -635,8 +681,8 @@ function rulesHTML(){
   <tr><td>9</td><td>Regardez une de vos cartes et une carte adverse. Une fois vues, l’échange est obligatoire.</td></tr>
   <tr><td>10</td><td>À 3 joueurs ou plus : échangez sans les voir deux cartes de deux autres joueurs.</td></tr>
   </table>
-  <p class="note">Coller : posez sur la défausse une carte de même valeur, à tout moment et à plusieurs, tant que cette carte reste visible sur la défausse. Si c’est la carte d’un adversaire, donnez-lui ensuite une des vôtres. Une erreur coûte une carte de pénalité.</p>
-  <p class="note">TamTam : annoncé en début de tour, la manche s’arrête immédiatement et tout le monde dévoile ses cartes. Si l’annonceur a strictement le plus petit total, il marque 0 et les autres marquent leurs cartes. Sinon, il prend la somme des cartes de tous les autres, qui marquent 0. La partie s’arrête quand quelqu’un dépasse le total fixé au départ (100 par défaut).</p>
+  <p class="note">Coller : posez sur la défausse une carte de même valeur, à tout moment, tant que cette carte reste visible. Une erreur coûte une carte de pénalité. En mode Classique, on ne colle que ses propres cartes et plusieurs joueurs peuvent coller à la suite.</p><p class="note">Mode Ultime ⚡ : une seule carte collée par défausse (le second arrivé n’est pas pénalisé s’il avait la bonne carte), on peut coller la carte d’un adversaire et lui donner une des siennes en échange, 20 secondes par tour, et après un TamTam chacun joue un dernier tour pendant lequel l’annonceur peut être attaqué.</p>
+  <p class="note">TamTam : annoncé en début de tour. En Classique, la manche s’arrête immédiatement ; en Ultime, les autres jouent un dernier tour. Si l’annonceur a strictement le plus petit total, il marque 0 et les autres marquent leurs cartes. Sinon, il prend la somme des cartes de tous les autres, qui marquent 0. La partie s’arrête quand quelqu’un dépasse le total fixé au départ (100 par défaut).</p>
   </div>`;
 }
 
@@ -673,8 +719,11 @@ function renderLobby(){
   </div>
   <div class="panel">
     <h2>Joueurs (${G.players.length}/6)</h2>
-    <ul class="plist">${G.players.map(p=>`<li><span>${esc(p.name)}${p.id===ME?' (vous)':''}</span><span class="note">${p.id===G.host?'hôte':''}</span></li>`).join('')}</ul>
+    <ul class="plist">${G.players.map(p=>`<li><span>${esc(p.name)}${p.id===ME?' (vous)':''}</span><span class="note">${p.id===G.host?'hôte':(p.bot&&host?`<button class="link" data-a="removeBot" data-id="${p.id}">retirer</button>`:'')}</span></li>`).join('')}</ul>
+    ${host?`<button class="btn wide" data-a="addBot" ${G.players.length>=6?'disabled':''}>+ Ajouter un joueur machine</button><p class="note">Jouez seul contre la machine, ou mélangez amis et machines. Six joueurs maximum.</p>`:''}
     ${i<0?`<p class="note">Vous n’êtes pas à cette table.</p>`:''}
+    <div class="limit"><span class="note">Mode de jeu</span><div class="chips"><button class="chip${(G.mode||'classic')==='classic'?' main':''}" data-a="mode" data-v="classic" ${host?'':'disabled'}>Classique</button><button class="chip${G.mode==='ultime'?' main':''}" data-a="mode" data-v="ultime" ${host?'':'disabled'}>Ultime ⚡</button></div>
+    <p class="note" style="text-align:center">${G.mode==='ultime'?'Ultime : une seule carte collée par défausse, on peut coller les cartes des autres (et leur donner une des siennes), dernier tour après TamTam où l’annonceur peut être attaqué, 20 secondes par tour.':'Classique : on ne colle que ses propres cartes, TamTam arrête la manche sur place.'}</p></div>
     <div class="limit"><span class="note">Partie perdue au-delà de</span><div class="chips">${[50,100,150,200].map(v=>`<button class="chip${(G.limit||100)===v?' main':''}" data-a="limit" data-v="${v}" ${host?'':'disabled'}>${v} pts</button>`).join('')}</div></div>
     ${host?`<button class="btn main wide" data-a="start" ${G.players.length<2?'disabled':''}>Distribuer les cartes</button>${G.players.length<2?'<p class="note">Il faut au moins 2 joueurs.</p>':''}`:`<p class="note">L’hôte lance la partie quand tout le monde est là.</p>`}
   </div></div>`;
@@ -688,10 +737,10 @@ function renderTable(){
   const seats=order.map(k=>{ const p=st.players[k]; const nb=count(p);
     const sub=st.phase==='peek'?(p.ready?'prêt':'mémorise…'):`${nb} carte${nb>1?'s':''} · ${p.total||0} pts`;
     return `<div class="seat${st.turn===k&&st.phase==='play'?' turn':''}">
-    <div class="head"><span class="av">${esc(p.name.slice(0,1).toUpperCase())}</span><span class="nm">${esc(p.name)}</span></div>
-    <div class="sub">${sub}</div>
-    ${p.slots.length>4?`<div class="extra">${p.slots.map((_,s)=>s>=4?slotHTML(st,k,s,'mini',it):'').join('')}</div>`:''}
-    <div class="grid">${p.slots.slice(0,4).map((_,s)=>slotHTML(st,k,s,'mini',it)).join('')}</div></div>`; }).join('');
+    <div class="head"><span class="av">${p.bot?'🤖':esc(p.name.slice(0,1).toUpperCase())}</span><span class="nm">${esc(p.name)}</span></div>
+    <div class="sub">${sub}${st.caller===k?'<span class="tag">TamTam</span>':''}</div>
+    <div class="grid">${[3,2,1,0].filter(s=>s<p.slots.length).map(s=>slotHTML(st,k,s,'mini',it)).join('')}</div>
+    ${p.slots.length>4?`<div class="extra below">${p.slots.map((_,s)=>s).filter(s=>s>=4).reverse().map(s=>slotHTML(st,k,s,'mini',it)).join('')}</div>`:''}</div>`; }).join('');
   // piles
   const canDraw=myTurn&&st.step==='start';
   const canTake=myTurn&&st.step==='start'&&!!tp&&count(me)>0;
@@ -707,6 +756,7 @@ function renderTable(){
   let status='', chips='', banner='';
   const give=(st.gives||[]).find(g=>g.from===i);
   if(give) banner=`<div class="banner give">Touchez une de vos cartes : elle ira à ${esc(st.players[give.to].name)}.</div>`;
+  if(st.caller!==null&&st.phase==='play') banner+=`<div class="banner">${esc(st.players[st.caller].name)} a annoncé TamTam : dernier tour, attaquez-le !</div>`;
   const collerHint=canColler(st)&&tp?` <span class="dim">Touchez une carte pour la coller sur ${cname(tp)}.</span>`:'';
   if(st.phase==='peek'){
     if(i<0) status='Les joueurs mémorisent leurs cartes.';
@@ -718,7 +768,7 @@ function renderTable(){
   } else if(myTurn){
     if(st.step==='start'){
       status='<b>À vous.</b> Touchez la pioche ou la défausse.'+collerHint;
-      chips=`<button class="chip call" data-a="tamalou">TamTam !</button>`;
+      chips=st.caller===null?`<button class="chip call" data-a="tamalou">TamTam !</button>`:'';
     } else if(st.step==='drawn'){
       const pw=powerAvail(st,st.held,i);
       status=`Touchez <b>une de vos cartes</b> pour la remplacer par ${cname(st.held)}, ou <b>la défausse</b> pour le défausser${pw?` et pouvoir ${POWER_TXT[pw]}`:''}.`;
@@ -747,7 +797,7 @@ function renderTable(){
       <div class="who">${esc(me.name)} · ${me.total||0} pts</div></div>`:'';
   const last=(st.log||[])[0];
   app.innerHTML=`<div class="screen">
-  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · manche ${st.round}</span><span class="links"><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="rules">Règles</button>${i>=0?`<button class="link" data-a="leaveGame">Quitter</button>`:''}</span></div>
+  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · manche ${st.round}${st.mode==='ultime'?' · ⚡':''}</span><span class="links"><button class="link" data-a="chat">💬</button><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="rules">Règles</button>${i>=0?`<button class="link" data-a="leaveGame">Quitter</button>`:''}</span></div>
   ${ui.rules?`<div class="panel">${rulesHTML()}<button class="btn" data-a="rules">Fermer</button></div>`:''}
   ${st.phase==='peek'&&st.draw?`<div class="drawrow"><span class="note">Tirage :</span>${st.players.map((p,k)=>st.draw.cards[k]?`<span class="drawc${st.draw.winner===k?' win':''}"><span class="slot mini">${face(st.draw.cards[k])}</span>${esc(p.name.slice(0,8))}</span>`:'').join('')}<span class="note"><b>${esc(st.players[st.draw.winner].name)}</b> commence</span></div>`:(st.phase==='peek'?`<div class="drawrow"><span class="note"><b>${esc(st.players[st.turn].name)}</b> a gagné la manche et commence</span></div>`:'')}
   <div class="opps">${seats}</div>
@@ -757,7 +807,7 @@ function renderTable(){
     ${heldHTML}
   </div>
   ${banner}
-  <div class="status"><span>${status}</span></div>
+  <div class="status"><span>${status}${st.mode==='ultime'&&st.phase==='play'?' <span class="timer"></span>':''}</span></div>
   <div class="chips">${chips}</div>
   <div class="dock">
     ${mine}
@@ -782,14 +832,14 @@ function renderScores(){
       <div class="nums"><span class="lbl2">main</span><span class="num hand">0</span><span class="num plus hidden">+${p.last}</span><span class="eq hidden">→</span><span class="num tot hidden" data-from="${(p.total||0)-(p.last||0)}" data-to="${p.total||0}">${(p.total||0)-(p.last||0)}</span></div>
     </div>`; }).join('');
   app.innerHTML=`<div class="page showdown" data-seq="${st.seq}">
-  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · ${st.limit||100} pts</span><span class="links"><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="leaveGame">Quitter</button></span></div>
+  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · ${st.limit||100} pts</span><span class="links"><button class="link" data-a="chat">💬</button><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="leaveGame">Quitter</button></span></div>
   <div class="panel" style="text-align:center;padding:12px">
     <h2>${over?`Fin de partie : ${esc(winners.join(' et '))} ${winners.length>1?'gagnent':'gagne'}`:`Fin de la manche ${st.round}`}</h2>
     <p class="note">${c!=null?`<b>${esc(st.players[c].name)}</b> a annoncé TamTam. Qui a le plus petit total ?`:'Dévoilement des cartes'}</p>
   </div>
   <div class="score">${rows}</div>
   <div class="verdict hidden"></div>
-  <div class="after hidden">${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>
+  <div class="after hidden">${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>${st.players.length<6?`<button class="link" data-a="addBot">+ Ajouter un joueur machine</button>`:''}`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>
   <div class="chips"><button class="chip" data-a="skipShow">Passer l’animation</button></div>
   </div>`;
   runShowdown(st);
@@ -818,7 +868,8 @@ function runShowdown(st){
     if(c==null){ v.textContent='Fin de la manche'; v.classList.add('ok'); SFX.win(); return; }
     const name=esc(st.players[c].name);
     if(st.callerWon){ v.innerHTML=`TamTam réussi ! <b>${name}</b> marque 0 point`; v.classList.add('ok'); SFX.win(); }
-    else { v.innerHTML=`TamTam raté… <b>${name}</b> prend <b>${st.players[c].last}</b> points, les autres 0`; v.classList.add('ko'); SFX.lose(); }
+    else { v.innerHTML=`TamTam raté… <b>${name}</b> prend <b>${st.players[c].last}</b> points, les autres 0<br><span class="taunt">${esc(taunt(st.players[c].name))}</span>`; v.classList.add('ko'); SFX.lose(); emojiRain(['😂','🤭','🫣','💥','🤡'],22); }
+    if(st.callerWon) emojiRain(['✦','★','🎉'],18);
   });
   t+=900;
   // round scores + totals
@@ -847,6 +898,106 @@ function countUp(root){
   requestAnimationFrame(tick);
 }
 
+/* ---------- Bots : the host's device plays for the machine players ---------- */
+const botPlan={}, botTried=new Set(); let botTimer=null;
+function botKnown(st,b){ const p=st.players[b], k={}; Object.entries((p.bot&&p.bot.known)||{}).forEach(([s,id])=>{ const c=p.slots[+s]; if(c&&c.id===id) k[+s]=c; }); return k; }
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function oppCards(st,b,exclude){ const out=[]; st.players.forEach((q,k)=>{ if(k===b||k===exclude) return; q.slots.forEach((c,u)=>{ if(c) out.push({p:k,u}); }); }); return out; }
+function botTick(){
+  if(!G||!CODE||G.host!==ME) return;
+  const st=G;
+  if(botTimer){ clearTimeout(botTimer); botTimer=null; }
+  if(st.phase==='peek'){ const b=st.players.find(p=>p.bot&&!p.ready); if(b){ botTimer=setTimeout(()=>{ if(G&&G.phase==='peek') actAs(b.id,'ready'); },900); } return; }
+  if(st.phase==='reveal'&&st.caller!==null&&st.callerWon===false&&!st.players[st.caller].bot&&ui.teased!==st.seq){ ui.teased=st.seq; const bots=st.players.filter(p=>p.bot); if(bots.length){ const b=rnd(bots); setTimeout(()=>{ if(G&&G.phase==='reveal') actAs(b.id,'chat',{text:taunt(st.players[st.caller].name).replace(/\{n\}/g,'')}); },4500); } return; }
+  if(st.phase!=='play') return;
+  // collages
+  const tp=top(st);
+  if(tp) st.players.forEach((p,b)=>{ if(!p.bot) return; if(st.turn===b&&st.step!=='start') return;
+    Object.entries(botKnown(st,b)).forEach(([s,c])=>{ if(c.r!==tp.r) return; const key=p.id+':'+c.id+':'+tp.id; if(botTried.has(key)) return; botTried.add(key);
+      setTimeout(()=>{ const g=G; if(!g||g.phase!=='play') return; const t2=top(g); if(!t2||t2.r!==tp.r) return; const q=g.players.find(x=>x.id===p.id); if(!q) return; const bi=g.players.indexOf(q); if(q.slots[+s]&&q.slots[+s].id===c.id) actAs(p.id,'coller',{p:bi,s:+s,rank:tp.r}); },700+Math.random()*1300); });
+  });
+  const cur=st.players[st.turn];
+  if(cur&&cur.bot){ const seq=st.seq; botTimer=setTimeout(()=>{ if(G&&G.seq===seq) botTurn(st.turn); },1300+Math.random()*700); }
+}
+function botTurn(b){
+  const st=G, p=st.players[b]; if(!p||!p.bot||st.phase!=='play'||st.turn!==b) return;
+  const known=botKnown(st,b), slots=p.slots, tp=top(st);
+  const unknown=slots.map((c,s)=>c&&known[s]==null?s:-1).filter(s=>s>=0);
+  const ks=Object.entries(known).sort((x,y)=>val(y[1])-val(x[1]));
+  const worst=ks[0]; const knownSum=ks.reduce((a,[,c])=>a+val(c),0);
+  const anySlot=slots.findIndex(c=>c);
+  if(st.step==='start'){
+    if(unknown.length===0 && count(p)>0 && (knownSum<=6 || (knownSum<=10&&Math.random()<.35))) return actAs(p.id,'tamalou');
+    if(tp&&count(p)>0){ const tv=val(tp);
+      if(worst && tv<=5 && tv<val(worst[1])-1){ botPlan[p.id]=+worst[0]; return actAs(p.id,'take'); }
+      if(tv<=2 && unknown.length){ botPlan[p.id]=unknown[0]; return actAs(p.id,'take'); } }
+    return actAs(p.id,'draw');
+  }
+  if(st.step==='fromDiscard'){ let s=botPlan[p.id]; if(s==null||!slots[s]) s=worst?+worst[0]:(unknown[0]??anySlot); botPlan[p.id]=null; return actAs(p.id,'swap',{s}); }
+  if(st.step==='drawn'){
+    const h=st.held, hv=val(h), pw=powerAvail(st,h,b);
+    if(count(p)===0) return actAs(p.id,'discardHeld');
+    if(pw && hv>=7){ const useful=pw==='own'?unknown.length>0:pw==='nine'?!!(worst&&val(worst[1])>=8):Math.random()<.6; if(useful) return actAs(p.id,'discardHeld'); }
+    if(worst && hv<val(worst[1])-1) return actAs(p.id,'swap',{s:+worst[0]});
+    if(hv<=4 && unknown.length) return actAs(p.id,'swap',{s:unknown[0]});
+    return actAs(p.id,'discardHeld');
+  }
+  if(st.step==='power'){
+    const k=st.power;
+    if(k==='own'){ const s=unknown.length?unknown[0]:anySlot; return s>=0?actAs(p.id,'look',{p:b,s,kind:'own'}):actAs(p.id,'skipPower'); }
+    if(k==='opp'){ const t=rnd(oppCards(st,b)); return t?actAs(p.id,'look',{p:t.p,s:t.u,kind:'opp'}):actAs(p.id,'skipPower'); }
+    if(k==='nine'){ if(st.nineLook) return actAs(p.id,'nine'); if(!worst||val(worst[1])<7) return actAs(p.id,'skipPower'); const t=rnd(oppCards(st,b)); return t?actAs(p.id,'nineLook',{s:+worst[0],p:t.p,u:t.u}):actAs(p.id,'skipPower'); }
+    if(k==='ten'){ const t1=rnd(oppCards(st,b)); const t2=t1?rnd(oppCards(st,b,t1.p)):null; return (t1&&t2)?actAs(p.id,'ten',{p:t1.p,u:t1.u,q:t2.p,v:t2.u}):actAs(p.id,'skipPower'); }
+    return actAs(p.id,'skipPower');
+  }
+}
+
+/* ---------- Messages between players ---------- */
+const PRESETS=['😂','🔥','😏','Trop lent !','Tu bluffes…','TamTam ? Jamais !','Aïe aïe aïe','Bien joué !','On se réveille ?'];
+const TAUNTS=['{n} a parlé un peu vite…','TamTam ? Plutôt Tam-Tam-Tombé, {n} !','{n}, la prochaine fois, compte tes cartes 😏','Merci {n} pour les points offerts !','{n} voulait briller… et a pris la pluie 🌧️','Oups. {n} y croyait fort.'];
+function taunt(n){ return rnd(TAUNTS).replace('{n}',n); }
+let sheetEl=null, bubbleEl=null, bubbleT=null;
+function renderSheet(){
+  if(!sheetEl){ sheetEl=document.createElement('div'); sheetEl.id='sheet'; document.body.appendChild(sheetEl); }
+  if(!ui.chatOpen||!G||!CODE){ sheetEl.innerHTML=''; sheetEl.style.display='none'; return; }
+  const msgs=(G.chat||[]).slice(-8);
+  sheetEl.style.display='block';
+  sheetEl.innerHTML=`<div class="sheetin"><div class="sheethead"><b>Messages</b><button class="link" data-a="chat">Fermer</button></div>
+   <div class="msgs">${msgs.length?msgs.map(m=>`<div class="msg"><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):'<p class="note">Aucun message pour l’instant.</p>'}</div>
+   <div class="presets">${PRESETS.map(t=>`<button class="chip" data-a="say" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+   <div class="row"><input id="chatin" maxlength="80" placeholder="Votre message…" value="${esc(ui.chatDraft||'')}" autocomplete="off"><button class="btn main" data-a="send">Envoyer</button></div></div>`;
+  const box=sheetEl.querySelector('.msgs'); if(box) box.scrollTop=box.scrollHeight;
+}
+function chatTick(){
+  if(!G||!CODE) return; const list=G.chat||[]; const last=list[list.length-1]; if(!last) return;
+  if(ui.lastChat===undefined){ ui.lastChat=last.id; return; }
+  if(last.id===ui.lastChat) return; ui.lastChat=last.id;
+  if(!bubbleEl){ bubbleEl=document.createElement('div'); bubbleEl.id='bubble'; document.body.appendChild(bubbleEl); }
+  bubbleEl.innerHTML=`<b>${esc(last.from)}</b> ${esc(last.text)}`; bubbleEl.classList.add('on');
+  clearTimeout(bubbleT); bubbleT=setTimeout(()=>bubbleEl.classList.remove('on'),5000);
+  const me=G.players[mi(G)]; if(!me||me.name!==last.from) SFX.sms();
+  if(ui.chatOpen) renderSheet();
+}
+function emojiRain(list,n){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for(let k=0;k<n;k++){
+    const sp=document.createElement('span'); sp.className='rain'; sp.textContent=rnd(list);
+    const x=Math.random()*100, size=18+Math.random()*22, dur=2200+Math.random()*1800, delay=Math.random()*900;
+    Object.assign(sp.style,{position:'fixed',left:x+'vw',top:'-40px',fontSize:size+'px',zIndex:70,pointerEvents:'none'});
+    document.body.appendChild(sp);
+    const an=sp.animate([{transform:'translateY(0) rotate(0deg)',opacity:1},{transform:`translateY(110vh) rotate(${(Math.random()>.5?1:-1)*(180+Math.random()*360)}deg)`,opacity:.9}],{duration:dur,delay,easing:'cubic-bezier(.3,.1,.7,1)'});
+    an.onfinish=()=>sp.remove(); setTimeout(()=>sp.remove(),dur+delay+200);
+  }
+}
+/* ---------- Ultimate mode: 20 seconds per turn ---------- */
+const TURN_MS=20000; let lastAutoSkip=-1;
+setInterval(()=>{
+  if(!G||!CODE||G.phase!=='play'||G.mode!=='ultime'||!G.turnStart) return;
+  const left=Math.max(0,Math.ceil((G.turnStart+TURN_MS-Date.now())/1000));
+  const el=document.querySelector('.timer'); if(el){ el.textContent=`⏱ ${left}s`; el.classList.toggle('hurry',left<=5); }
+  if(left===0 && G.host===ME && lastAutoSkip!==G.seq){ lastAutoSkip=G.seq; const cur=G.players[G.turn]; if(cur&&!cur.bot) act('skipTurn'); }
+},500);
+
 /* ---------- Sounds (synthesised, no files) ---------- */
 let AC=null, muted=ls('tamtam-mute')==='1';
 function ac(){ if(muted) return null; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }catch(e){ return null; } }
@@ -857,7 +1008,8 @@ const SFX={
   tick:()=>tone(1500,.03,'square',.035),
   win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.11)),
   lose:()=>{ tone(320,.35,'sawtooth',.1,0,190); tone(230,.55,'sawtooth',.09,.3,120); },
-  tam:()=>{ tone(660,.1,'square',.08); tone(880,.16,'square',.08,.1); }
+  tam:()=>{ tone(660,.1,'square',.08); tone(880,.16,'square',.08,.1); },
+  sms:()=>{ tone(1175,.09,'sine',.12); tone(1568,.14,'sine',.12,.1); }
 };
 document.addEventListener('pointerdown',()=>{ if(!muted) ac(); },{passive:true});
 
@@ -897,6 +1049,9 @@ function onSlot(p,s){
   if(c&&canColler(st)){ const tp=top(st); if(tp) act('coller',{p,s,rank:tp.r}); }
 }
 app.addEventListener('input',e=>{ if(e.target.id==='name') ui.name=e.target.value; if(e.target.id==='code') ui.code=e.target.value.toUpperCase(); });
+document.addEventListener('input',e=>{ if(e.target.id==='chatin') ui.chatDraft=e.target.value; });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.id==='chatin'){ const t=e.target.value.trim(); if(t){ act('chat',{text:t}); ui.chatDraft=''; e.target.value=''; } } });
+document.addEventListener('click',e=>{ const b=e.target.closest('#sheet [data-a]'); if(!b) return; const a=b.dataset.a; if(a==='chat'){ ui.chatOpen=false; renderSheet(); } if(a==='say'){ act('chat',{text:b.dataset.t}); } if(a==='send'){ const inp=document.getElementById('chatin'); const t=inp?inp.value.trim():''; if(t){ act('chat',{text:t}); ui.chatDraft=''; inp.value=''; } } });
 app.addEventListener('click',e=>{
   const sl=e.target.closest('button.slot[data-p]'); if(sl){ onSlot(+sl.dataset.p,+sl.dataset.s); return; }
   const b=e.target.closest('[data-a]'); if(!b) return;
@@ -906,7 +1061,13 @@ app.addEventListener('click',e=>{
   if(a==='quit'){ if(G&&G.phase==='lobby') act('leave').then(()=>closeGame()); else closeGame(); return; }
   if(a==='rules'){ ui.rules=!ui.rules; render(); return; }
   if(a==='limit'){ act('setLimit',{limit:+b.dataset.v}); return; }
+  if(a==='mode'){ act('setMode',{mode:b.dataset.v}); return; }
+  if(a==='chat'){ ui.chatOpen=!ui.chatOpen; renderSheet(); return; }
+  if(a==='say'){ act('chat',{text:b.dataset.t}); return; }
+  if(a==='send'){ const inp=document.getElementById('chatin'); const t=inp?inp.value.trim():''; if(t){ act('chat',{text:t}); ui.chatDraft=''; if(inp) inp.value=''; } return; }
   if(a==='mute'){ muted=!muted; ls('tamtam-mute',muted?'1':'0'); if(!muted) ac(); render(); return; }
+  if(a==='addBot'){ act('addBot'); return; }
+  if(a==='removeBot'){ actAs(b.dataset.id,'leave'); return; }
   if(a==='skipShow'){ finishShowdown(false); return; }
   if(a==='leaveGame'){ if(confirm('Quitter la partie ?')){ act('leave').then(()=>closeGame()); } return; }
   if(a==='skipPower'){ ui.sel=null; ui.pick=null; ui.reveal=null; }
@@ -964,11 +1125,13 @@ function sparkle(r){
 let lastSeq=-1, lastTurnKey='', lastFx=-1;
 const _render=render;
 render=function(){
+  try{ chatTick(); renderSheet(); }catch(e){}
   if(G&&CODE&&(G.phase==='reveal'||G.phase==='over')){ const sd=document.querySelector('.showdown'); if(sd&&sd.dataset.seq===String(G.seq)){ const mb=sd.querySelector('[data-a="mute"]'); if(mb) mb.textContent=muted?'🔇':'🔊'; return; } }
   const changed=!!(G&&CODE&&booted&&G.seq!==lastSeq);
   const before=changed&&lastSeq>=0&&document.querySelector('.screen')?cardRects():null;
   if(G){ const key=G.round+':'+G.turn+':'+G.step; if(key!==lastTurnKey){ if(G.step!=='power'){ ui.sel=null; ui.pick=null; if(ui.reveal&&ui.reveal.until>Date.now()+1e7) ui.reveal=null; } lastTurnKey=key; } }
   _render();
+  try{ botTick(); }catch(e){}
   if(changed){
     lastSeq=G.seq;
     if(before && document.querySelector('.screen') && !matchMedia('(prefers-reduced-motion: reduce)').matches) animateMoves(before,cardRects());

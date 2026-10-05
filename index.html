@@ -104,7 +104,8 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:32px; }
 .bar .brand{ font-family:var(--num); font-weight:900; font-size:20px; }
 .bar .meta{ color:var(--mute); font-size:12px; white-space:nowrap; }
-.bar .links{ display:flex; gap:2px; white-space:nowrap; }
+.bar .links{ display:flex; gap:2px; white-space:nowrap; align-items:center; }
+.bar .link[data-a="mute"]{ text-decoration:none; font-size:15px; }
 .bar .link{ font-size:13px; }
 .drawrow{ display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; font-size:12px; }
 .drawrow b{ color:var(--accent); }
@@ -179,6 +180,36 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 @keyframes pop{ 50%{ transform:scale(1.18); } }
 .tag.go{ background:var(--accent); color:var(--accent-ink); }
 .srow.rwin{ border-color:rgba(200,240,60,.5); }
+.srow.show{ grid-template-columns:1fr; gap:8px; transition:opacity .4s, transform .4s; }
+.srow.show .cards{ gap:6px; }
+.srow.show .cards .slot.mid{ width:clamp(44px,12.5vw,58px); }
+.srow.show .nums{ justify-content:flex-start; align-items:baseline; gap:8px; }
+.srow.show .lbl2{ color:var(--mute); font-size:12px; }
+.srow.show .hand{ color:var(--text); }
+.srow.active{ border-color:var(--accent); background:linear-gradient(100deg,var(--surface) 20%,var(--surface2) 50%,var(--surface) 80%); background-size:250% 100%; animation:sweep 1.4s linear infinite; transform:scale(1.015); }
+@keyframes sweep{ from{ background-position:200% 0 } to{ background-position:-100% 0 } }
+.srow.done{ opacity:.78; }
+.slot.down .f{ opacity:0; }
+.slot.up .back{ display:none; }
+@media (prefers-reduced-motion: no-preference){ .slot.up .f{ animation:flipIn .45s ease; } @keyframes flipIn{ from{ transform:rotateY(90deg) } to{ transform:none } } }
+.hidden{ visibility:hidden; }
+.verdict{ text-align:center; padding:14px 12px; border-radius:14px; font-weight:700; font-size:17px; line-height:1.35; }
+.verdict.ok{ background:var(--accent); color:var(--accent-ink); animation:pop .5s ease; }
+.verdict.ko{ background:var(--danger); color:#fff; animation:shake .5s ease; }
+@keyframes shake{ 20%{ transform:translateX(-6px) } 40%{ transform:translateX(6px) } 60%{ transform:translateX(-4px) } 80%{ transform:translateX(4px) } }
+.overlay{ position:fixed; inset:0; z-index:40; background:rgba(11,15,26,.96); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center; animation:fadeIn .35s ease; }
+.overlay.out{ animation:fadeOut .4s ease forwards; }
+@keyframes fadeIn{ from{ opacity:0 } } @keyframes fadeOut{ to{ opacity:0 } }
+.ovtitle{ font-family:var(--num); font-weight:900; font-size:34px; }
+.ovcards{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; min-height:150px; align-items:flex-start; }
+.ovcard{ display:flex; flex-direction:column; align-items:center; gap:6px; font-size:14px; color:var(--mute); }
+.ovcard .slot.big{ width:clamp(74px,22vw,100px); }
+.ovcard .n{ font-weight:600; color:var(--text); }
+.ovcard.win .slot .f{ box-shadow:0 0 0 3px var(--accent), 0 0 34px rgba(200,240,60,.85); }
+.ovcard.win .n{ color:var(--accent); }
+.ovmsg{ min-height:28px; font-size:20px; font-weight:600; }
+.ovmsg b{ color:var(--accent); }
+@media (prefers-reduced-motion: no-preference){ .slot.deal{ animation:dealIn .6s cubic-bezier(.2,.8,.2,1) both; } @keyframes dealIn{ from{ transform:translateY(-70vh) rotate(-25deg) scale(.6); opacity:0 } to{ transform:none; opacity:1 } } }
 .srow .det{ font-size:12px; color:var(--mute); }
 .srow .cards{ display:flex; gap:4px; flex-wrap:wrap; grid-column:1 / -1; }
 .srow .cards .slot.mini{ width:30px; }
@@ -250,7 +281,7 @@ function deal(st){
   if(st.round===1 || st.nextStarter==null || st.nextStarter>=st.players.length){
     const dd=newDeck(); let pool=st.players.map((_,k)=>k), cards={};
     let guard=0;
-    while(pool.length>1 && guard++<10){ const vals=pool.map(k=>{ cards[k]=dd.pop(); return val(cards[k]); }); const mx=Math.max(...vals); const keep=pool.filter((k,j)=>vals[j]===mx); if(keep.length===pool.length){ pool=[pool[Math.floor(Math.random()*pool.length)]]; } else pool=keep; }
+    while(pool.length>1 && guard++<10){ const vals=pool.map(k=>{ cards[k]=dd.pop(); return val(cards[k]); }); const mn=Math.min(...vals); const keep=pool.filter((k,j)=>vals[j]===mn); if(keep.length===pool.length){ pool=[pool[Math.floor(Math.random()*pool.length)]]; } else pool=keep; }
     st.turn=pool[0]; st.draw={cards:st.players.map((_,k)=>cards[k]||null),winner:pool[0]};
   } else st.turn=st.nextStarter;
   st.phase='peek'; st.step='start';
@@ -266,10 +297,17 @@ function endRound(st){
   const sums=st.players.map(p=>p.slots.filter(Boolean).reduce((a,c)=>a+val(c),0));
   const c=st.caller, min=Math.min(...sums);
   const strict=c!=null && sums[c]===min && sums.filter(x=>x===min).length===1;
-  st.players.forEach((p,k)=>{ const sc=(k===c)?(strict?0:sums[k]+10):sums[k]; p.hand=sums[k]; p.last=sc; p.total=(p.total||0)+sc; });
+  const othersSum=c==null?0:sums.reduce((a,x,j)=>j===c?a:a+x,0);
+  st.players.forEach((p,k)=>{
+    let sc;
+    if(c==null) sc=sums[k]; else if(strict) sc=(k===c)?0:sums[k]; else sc=(k===c)?othersSum:0;
+    p.hand=sums[k]; p.last=sc; p.total=(p.total||0)+sc;
+  });
   st.callerWon=c==null?null:strict; st.gives=[];
-  if(c!=null) log(st, strict?`${st.players[c].name} réussit son TamTam`:`${st.players[c].name} rate son TamTam (+10)`);
-  const best=Math.min(...st.players.map(p=>p.last)); st.nextStarter=st.players.findIndex(p=>p.last===best);
+  if(c!=null) log(st, strict?`${st.players[c].name} réussit son TamTam : 0 point`:`${st.players[c].name} rate son TamTam et prend ${othersSum} points`);
+  // the round winner starts the next round
+  if(c!=null&&strict) st.nextStarter=c;
+  else { let bi=-1,bv=Infinity; st.players.forEach((p,k)=>{ if(k===c) return; if(sums[k]<bv){ bv=sums[k]; bi=k; } }); st.nextStarter=bi>=0?bi:0; }
   if(st.players.some(p=>p.total>(st.limit||100))) st.phase='over';
 }
 function checkEmpty(st,k){
@@ -494,7 +532,7 @@ async function openGame(code,quiet){
       if(payload.eventType==='DELETE'){ closeGame(); toast('La table a été fermée.'); return; }
       if(applyRow(payload.new)) render();
     }).subscribe();
-  pollT=setInterval(async()=>{ if(!CODE) return; try{ const row=await fetchGame(CODE); if(row&&applyRow(row)&&row.version===GV) render(); }catch(e){} },4000);
+  pollT=setInterval(async()=>{ if(!CODE) return; try{ const row=await fetchGame(CODE); const v0=GV; if(row&&applyRow(row)&&GV!==v0) render(); }catch(e){} },4000);
   return true;
 }
 function closeGame(){ closeChannel(); CODE=null; G=null; GV=0; ls('tamalou-code',null); ui.mode=null; render(); }
@@ -598,7 +636,7 @@ function rulesHTML(){
   <tr><td>10</td><td>À 3 joueurs ou plus : échangez sans les voir deux cartes de deux autres joueurs.</td></tr>
   </table>
   <p class="note">Coller : posez sur la défausse une carte de même valeur, à tout moment et à plusieurs, tant que cette carte reste visible sur la défausse. Si c’est la carte d’un adversaire, donnez-lui ensuite une des vôtres. Une erreur coûte une carte de pénalité.</p>
-  <p class="note">TamTam : annoncé en début de tour, la manche s’arrête immédiatement et tout le monde dévoile ses cartes. Si l’annonceur a strictement le plus petit total, il marque 0, sinon son total +10. La partie s’arrête quand quelqu’un dépasse le total fixé au départ (100 par défaut).</p>
+  <p class="note">TamTam : annoncé en début de tour, la manche s’arrête immédiatement et tout le monde dévoile ses cartes. Si l’annonceur a strictement le plus petit total, il marque 0 et les autres marquent leurs cartes. Sinon, il prend la somme des cartes de tous les autres, qui marquent 0. La partie s’arrête quand quelqu’un dépasse le total fixé au départ (100 par défaut).</p>
   </div>`;
 }
 
@@ -709,9 +747,9 @@ function renderTable(){
       <div class="who">${esc(me.name)} · ${me.total||0} pts</div></div>`:'';
   const last=(st.log||[])[0];
   app.innerHTML=`<div class="screen">
-  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · manche ${st.round}</span><span class="links"><button class="link" data-a="rules">Règles</button>${i>=0?`<button class="link" data-a="leaveGame">Quitter</button>`:''}</span></div>
+  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · manche ${st.round}</span><span class="links"><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="rules">Règles</button>${i>=0?`<button class="link" data-a="leaveGame">Quitter</button>`:''}</span></div>
   ${ui.rules?`<div class="panel">${rulesHTML()}<button class="btn" data-a="rules">Fermer</button></div>`:''}
-  ${st.phase==='peek'&&st.draw?`<div class="drawrow"><span class="note">Qui commence ?</span>${st.players.map((p,k)=>st.draw.cards[k]?`<span class="drawc${st.draw.winner===k?' win':''}"><span class="slot mini flip">${face(st.draw.cards[k])}</span>${esc(p.name.slice(0,8))}</span>`:'').join('')}<span class="note"><b>${esc(st.players[st.draw.winner].name)}</b> commence</span></div>`:(st.phase==='peek'?`<div class="drawrow"><span class="note"><b>${esc(st.players[st.turn].name)}</b> a gagné la manche et commence</span></div>`:'')}
+  ${st.phase==='peek'&&st.draw?`<div class="drawrow"><span class="note">Tirage :</span>${st.players.map((p,k)=>st.draw.cards[k]?`<span class="drawc${st.draw.winner===k?' win':''}"><span class="slot mini">${face(st.draw.cards[k])}</span>${esc(p.name.slice(0,8))}</span>`:'').join('')}<span class="note"><b>${esc(st.players[st.draw.winner].name)}</b> commence</span></div>`:(st.phase==='peek'?`<div class="drawrow"><span class="note"><b>${esc(st.players[st.turn].name)}</b> a gagné la manche et commence</span></div>`:'')}
   <div class="opps">${seats}</div>
   <div class="center">
     <div class="pile">${deckHTML}<span class="lbl">Pioche</span></div>
@@ -725,35 +763,118 @@ function renderTable(){
     ${mine}
     <div class="log">${last?esc(last.t):''}${last&&hostbar?' · ':''}${hostbar}</div>
   </div></div>`;
+  if(st.phase==='peek'&&st.draw) runDrawOverlay(st);
+}
+function showOrder(st){
+  const c=st.caller, idx=st.players.map((_,k)=>k);
+  const others=idx.filter(k=>k!==c).sort((x,y)=>(st.players[y].hand||0)-(st.players[x].hand||0));
+  return c!=null?[c,...others]:others;
 }
 function renderScores(){
   const st=G, over=st.phase==='over';
-  const ranked=st.players.map((p,k)=>({p,k})).sort((a,b)=>a.p.total-b.p.total);
-  const best=ranked[0].p.total;
-  const roundBest=Math.min(...st.players.map(p=>p.last));
-  app.innerHTML=`<div class="page">
-  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">Table ${esc(st.code)} · ${st.limit||100} pts</span><button class="link" data-a="leaveGame">Quitter</button></div>
-  <div class="panel" style="text-align:center">
-    <h2>${over?`${esc(ranked.filter(r=>r.p.total===best).map(r=>r.p.name).join(' et '))} ${ranked.filter(r=>r.p.total===best).length>1?'gagnent':'gagne'} la partie`:`Fin de la manche ${st.round}`}</h2>
-    <p class="note">${st.caller!=null?esc(st.players[st.caller].name)+' a annoncé TamTam et '+(st.callerWon?'avait bien le plus petit total : 0 point.':'n’avait pas le plus petit total : +10.'):''}</p>
+  const order=showOrder(st), c=st.caller;
+  const ranked=st.players.map((p,k)=>({p,k})).sort((x,y)=>x.p.total-y.p.total); const best=ranked[0].p.total;
+  const winners=ranked.filter(r=>r.p.total===best).map(r=>r.p.name);
+  const rows=order.map(k=>{ const p=st.players[k]; const cards=p.slots.filter(Boolean);
+    return `<div class="srow show" data-k="${k}">
+      <div class="nm">${esc(p.name)}${c===k?'<span class="tag">TamTam</span>':''}${st.nextStarter===k&&!over?'<span class="tag go hidden">commence</span>':''}</div>
+      <div class="cards">${cards.length?cards.map(cd=>`<span class="slot mid down" data-cid="${cd.id}" data-val="${val(cd)}"><span class="back"></span>${face(cd)}</span>`).join(''):'<span class="det">Aucune carte</span>'}</div>
+      <div class="nums"><span class="lbl2">main</span><span class="num hand">0</span><span class="num plus hidden">+${p.last}</span><span class="eq hidden">→</span><span class="num tot hidden" data-from="${(p.total||0)-(p.last||0)}" data-to="${p.total||0}">${(p.total||0)-(p.last||0)}</span></div>
+    </div>`; }).join('');
+  app.innerHTML=`<div class="page showdown" data-seq="${st.seq}">
+  <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · ${st.limit||100} pts</span><span class="links"><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="leaveGame">Quitter</button></span></div>
+  <div class="panel" style="text-align:center;padding:12px">
+    <h2>${over?`Fin de partie : ${esc(winners.join(' et '))} ${winners.length>1?'gagnent':'gagne'}`:`Fin de la manche ${st.round}`}</h2>
+    <p class="note">${c!=null?`<b>${esc(st.players[c].name)}</b> a annoncé TamTam. Qui a le plus petit total ?`:'Dévoilement des cartes'}</p>
   </div>
-  <div class="score">${ranked.map(({p,k})=>`
-    <div class="srow${over&&p.total===best?' win':''}${!over&&p.last===roundBest?' rwin':''}">
-      <div class="nm">${esc(p.name)}${st.caller===k?'<span class="tag">TamTam</span>':''}${!over&&p.last===roundBest?'<span class="tag go">commence</span>':''}</div>
-      <div class="nums"><span class="num plus">+${p.last}</span><span class="eq">→</span><span class="num tot" data-from="${(p.total||0)-(p.last||0)}" data-to="${p.total||0}">${(p.total||0)-(p.last||0)}</span></div>
-      <div class="cards">${p.slots.filter(Boolean).map(c=>cardHTML(c,'mini',true)).join('')||'<span class="det">Aucune carte</span>'}</div>
-    </div>`).join('')}</div>
-  ${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>`;
-  if(lastCount!==st.seq){ lastCount=st.seq; countUp(); }
+  <div class="score">${rows}</div>
+  <div class="verdict hidden"></div>
+  <div class="after hidden">${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>
+  <div class="chips"><button class="chip" data-a="skipShow">Passer l’animation</button></div>
+  </div>`;
+  runShowdown(st);
 }
-let lastCount=-1;
-function countUp(){
-  const els=[...document.querySelectorAll('.num.tot')];
-  const t0=performance.now(), dur=1400;
+let show={seq:-1,timers:[]};
+function runShowdown(st){
+  show.timers.forEach(clearTimeout); show.timers=[]; show.seq=st.seq;
+  const root=document.querySelector('.showdown'); if(!root) return;
+  const order=showOrder(st), c=st.caller;
+  const rowEl=k=>root.querySelector(`.srow[data-k="${k}"]`);
+  let t=400; const at=(ms,fn)=>show.timers.push(setTimeout(fn,ms));
+  if(c!=null) at(100,()=>SFX.tam());
+  order.forEach(k=>{
+    const p=st.players[k], cards=p.slots.filter(Boolean);
+    at(t,()=>{ const r=rowEl(k); if(r){ r.classList.add('active'); r.scrollIntoView({block:'nearest',behavior:'smooth'}); } });
+    t+=350;
+    let sum=0;
+    cards.forEach((cd,j)=>{ const v=val(cd); at(t,()=>{ const r=rowEl(k); if(!r) return; const el=r.querySelectorAll('.slot.down')[0]; if(el){ el.classList.remove('down'); el.classList.add('up'); } sum+=v; r.querySelector('.hand').textContent=sum; SFX.flip(); }); t+=520; });
+    t+=500;
+    at(t,()=>{ const r=rowEl(k); if(r){ r.classList.remove('active'); r.classList.add('done'); } });
+    t+=250;
+  });
+  // verdict
+  at(t,()=>{
+    const v=root.querySelector('.verdict'); if(!v) return; v.classList.remove('hidden');
+    if(c==null){ v.textContent='Fin de la manche'; v.classList.add('ok'); SFX.win(); return; }
+    const name=esc(st.players[c].name);
+    if(st.callerWon){ v.innerHTML=`TamTam réussi ! <b>${name}</b> marque 0 point`; v.classList.add('ok'); SFX.win(); }
+    else { v.innerHTML=`TamTam raté… <b>${name}</b> prend <b>${st.players[c].last}</b> points, les autres 0`; v.classList.add('ko'); SFX.lose(); }
+  });
+  t+=900;
+  // round scores + totals
+  at(t,()=>{ root.querySelectorAll('.srow .plus, .srow .eq, .srow .tot, .tag.go').forEach(e=>e.classList.remove('hidden')); countUp(root); });
+  t+=1500;
+  at(t,()=>finishShowdown(true));
+}
+function finishShowdown(soft){
+  const root=document.querySelector('.showdown'); if(!root) return;
+  if(!soft){ show.timers.forEach(clearTimeout); show.timers=[];
+    root.querySelectorAll('.srow').forEach(r=>{ r.classList.remove('active'); r.classList.add('done'); let sum=0; r.querySelectorAll('.slot').forEach(el=>{ el.classList.remove('down'); el.classList.add('up'); sum+=+el.dataset.val; }); r.querySelector('.hand').textContent=sum; });
+    root.querySelectorAll('.hidden').forEach(e=>{ if(!e.closest('.after')&&!e.classList.contains('verdict')) e.classList.remove('hidden'); });
+    root.querySelectorAll('.tot').forEach(el=>{ el.textContent=el.dataset.to; el.classList.add('done'); });
+    const v=root.querySelector('.verdict'); const st=G; if(v&&st){ v.classList.remove('hidden'); if(st.caller==null){ v.textContent='Fin de la manche'; v.classList.add('ok'); } else if(st.callerWon){ v.innerHTML=`TamTam réussi ! <b>${esc(st.players[st.caller].name)}</b> marque 0 point`; v.classList.add('ok'); } else { v.innerHTML=`TamTam raté… <b>${esc(st.players[st.caller].name)}</b> prend <b>${st.players[st.caller].last}</b> points, les autres 0`; v.classList.add('ko'); } }
+  }
+  root.querySelector('.after').classList.remove('hidden');
+  const sk=root.querySelector('[data-a="skipShow"]'); if(sk) sk.remove();
+}
+function countUp(root){
+  const els=[...root.querySelectorAll('.num.tot')];
+  const t0=performance.now(), dur=1300; let lastTick=0;
   const tick=now=>{ const k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3); let go=false;
     els.forEach(el=>{ if(!el.isConnected) return; const a=+el.dataset.from, b=+el.dataset.to; el.textContent=Math.round(a+(b-a)*e); if(k<1) go=true; else el.classList.add('done'); });
+    if(now-lastTick>90&&k<1){ lastTick=now; SFX.tick(); }
     if(go) requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
+}
+
+/* ---------- Sounds (synthesised, no files) ---------- */
+let AC=null, muted=ls('tamtam-mute')==='1';
+function ac(){ if(muted) return null; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }catch(e){ return null; } }
+function tone(f,dur,type,vol,when,slide){ const a=ac(); if(!a) return; const o=a.createOscillator(), g=a.createGain(); const t=a.currentTime+(when||0); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||.12,t+.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.03); }
+const SFX={
+  flip:()=>tone(880,.09,'triangle',.11,0,440),
+  deal:()=>tone(320,.14,'sawtooth',.05,0,110),
+  tick:()=>tone(1500,.03,'square',.035),
+  win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.11)),
+  lose:()=>{ tone(320,.35,'sawtooth',.1,0,190); tone(230,.55,'sawtooth',.09,.3,120); },
+  tam:()=>{ tone(660,.1,'square',.08); tone(880,.16,'square',.08,.1); }
+};
+document.addEventListener('pointerdown',()=>{ if(!muted) ac(); },{passive:true});
+
+/* ---------- Opening draw : the table master deals one card per player ---------- */
+function runDrawOverlay(st){
+  if(!st.draw||ui.drawShown===st.round) return; ui.drawShown=st.round;
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="ovtitle">Qui commence ?</div><p class="note">Le maître de table distribue une carte à chacun. La plus petite carte commence.</p><div class="ovcards"></div><div class="ovmsg"></div><button class="chip" data-ov="skip">Passer</button>`;
+  document.body.appendChild(ov);
+  const wrap=ov.querySelector('.ovcards'); const timers=[];
+  const close=()=>{ timers.forEach(clearTimeout); ov.classList.add('out'); setTimeout(()=>ov.remove(),420); };
+  ov.addEventListener('click',e=>{ if(e.target.dataset.ov) close(); });
+  let t=500;
+  st.players.forEach((p,k)=>{ const c=st.draw.cards[k]; if(!c) return;
+    timers.push(setTimeout(()=>{ SFX.deal(); const el=document.createElement('div'); el.className='ovcard'; el.dataset.k=k; el.innerHTML=`<span class="slot big deal">${face(c)}</span><span class="n">${esc(p.name)}</span><span class="v">${val(c)} pt${Math.abs(val(c))>1?'s':''}</span>`; wrap.appendChild(el); },t)); t+=850; });
+  timers.push(setTimeout(()=>{ const w=st.draw.winner; const el=wrap.querySelector(`.ovcard[data-k="${w}"]`); if(el) el.classList.add('win'); ov.querySelector('.ovmsg').innerHTML=`<b>${esc(st.players[w].name)}</b> commence`; SFX.win(); },t+300));
+  timers.push(setTimeout(close,t+2900));
 }
 /* ---------- Events ---------- */
 function showReveal(cards,ms){ const r={ids:cards.map(c=>c.id),until:Date.now()+ms}; ui.reveal=r; if(ms<1e8) setTimeout(()=>{ if(ui.reveal===r){ ui.reveal=null; render(); } },ms+20); }
@@ -785,6 +906,8 @@ app.addEventListener('click',e=>{
   if(a==='quit'){ if(G&&G.phase==='lobby') act('leave').then(()=>closeGame()); else closeGame(); return; }
   if(a==='rules'){ ui.rules=!ui.rules; render(); return; }
   if(a==='limit'){ act('setLimit',{limit:+b.dataset.v}); return; }
+  if(a==='mute'){ muted=!muted; ls('tamtam-mute',muted?'1':'0'); if(!muted) ac(); render(); return; }
+  if(a==='skipShow'){ finishShowdown(false); return; }
   if(a==='leaveGame'){ if(confirm('Quitter la partie ?')){ act('leave').then(()=>closeGame()); } return; }
   if(a==='skipPower'){ ui.sel=null; ui.pick=null; ui.reveal=null; }
   act(a);
@@ -821,6 +944,7 @@ function animateMoves(before,after){
     else if(before.deck||after.deck) moves.push([before.deck||after.deck,a]);
   });
   if(moves.length>12) return;
+  if(moves.length) SFX.deal();
   moves.forEach(([f,a])=>fly(f,a));
 }
 function flashIds(ids){ ids.forEach(id=>{ const el=document.querySelector(`[data-cid="${id}"]`); if(el){ el.classList.add('lift'); setTimeout(()=>el.classList.remove('lift'),2600); } }); }
@@ -840,6 +964,7 @@ function sparkle(r){
 let lastSeq=-1, lastTurnKey='', lastFx=-1;
 const _render=render;
 render=function(){
+  if(G&&CODE&&(G.phase==='reveal'||G.phase==='over')){ const sd=document.querySelector('.showdown'); if(sd&&sd.dataset.seq===String(G.seq)){ const mb=sd.querySelector('[data-a="mute"]'); if(mb) mb.textContent=muted?'🔇':'🔊'; return; } }
   const changed=!!(G&&CODE&&booted&&G.seq!==lastSeq);
   const before=changed&&lastSeq>=0&&document.querySelector('.screen')?cardRects():null;
   if(G){ const key=G.round+':'+G.turn+':'+G.step; if(key!==lastTurnKey){ if(G.step!=='power'){ ui.sel=null; ui.pick=null; if(ui.reveal&&ui.reveal.until>Date.now()+1e7) ui.reveal=null; } lastTurnKey=key; } }

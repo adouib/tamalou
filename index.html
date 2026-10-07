@@ -1004,7 +1004,7 @@ function renderTable(){
     ${mine}
     <div class="log">${last?esc(last.t):''}${last&&hostbar?' · ':''}${hostbar}</div>
   </div></div>`;
-  if(ui._surpSeen&&ui.surpToastRound!==st.round){ ui.surpToastRound=st.round; toast('✨ Carte Surprise ! Au début de votre tour, vous pourrez échanger en secret une de vos cartes avec celle d’un adversaire. Chut 🤫',true); }
+  if(ui._surpSeen&&ui.surpToastRound!==st.round){ ui.surpToastRound=st.round; SFX.surprise(); toast('✨ Carte Surprise ! Au début de votre tour, vous pourrez échanger en secret une de vos cartes avec celle d’un adversaire. Chut 🤫',true); }
 }
 function showOrder(st){
   const c=st.caller, idx=st.players.map((_,k)=>k).filter(k=>!st.players[k].waiting);
@@ -1204,28 +1204,59 @@ setInterval(()=>{
   if(left===0 && G.host===ME && lastAutoSkip!==G.seq){ lastAutoSkip=G.seq; const cur=G.players[G.turn]; if(cur&&!cur.bot) act('skipTurn'); }
 },500);
 
-/* ---------- Sounds (synthesised, no files) ---------- */
-let AC=null, muted=ls('tamtam-mute')==='1';
-function ac(){ if(muted) return null; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }catch(e){ return null; } }
-function tone(f,dur,type,vol,when,slide){ const a=ac(); if(!a) return; const o=a.createOscillator(), g=a.createGain(); const t=a.currentTime+(when||0); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||.12,t+.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.03); }
+/* ---------- Sounds : a small synth engine (no audio files) ---------- */
+let AC=null, muted=ls('tamtam-mute')==='1', BUS=null, NOISE=null;
+function ac(){ if(muted) return null; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended'&&AC.resume){ const p=AC.resume(); if(p&&p.catch) p.catch(()=>{}); } return AC; }catch(e){ return null; } }
+function impulse(a,sec,decay){ const n=Math.floor(a.sampleRate*sec), b=a.createBuffer(2,n,a.sampleRate); for(let c=0;c<2;c++){ const d=b.getChannelData(c); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,decay); } return b; }
+function bus(a){
+  if(BUS&&BUS.ctx===a) return BUS;
+  const comp=a.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=18; comp.ratio.value=4; comp.attack.value=.003; comp.release.value=.25; comp.connect(a.destination);
+  const dry=a.createGain(); dry.gain.value=.9; dry.connect(comp);
+  const rev=a.createConvolver(); rev.buffer=impulse(a,1.7,3); const wet=a.createGain(); wet.gain.value=.4; rev.connect(wet); wet.connect(comp);
+  BUS={ctx:a,dry,rev}; return BUS;
+}
+function noiseBuf(a){ if(NOISE&&NOISE.sampleRate===a.sampleRate) return NOISE; const n=Math.floor(a.sampleRate*1.5), b=a.createBuffer(1,n,a.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; NOISE=b; return b; }
+function patchOut(a,g,o,t,dur){ let out=g; if(o.lp||o.hp){ const f=a.createBiquadFilter(); f.type=o.lp?'lowpass':'highpass'; f.frequency.setValueAtTime(o.lp||o.hp,t); if(o.lpTo) f.frequency.exponentialRampToValueAtTime(o.lpTo,t+dur); f.Q.value=o.q||.7; g.connect(f); out=f; } const B=bus(a); out.connect(B.dry); if(o.rev){ const s=a.createGain(); s.gain.value=o.rev; out.connect(s); s.connect(B.rev); } }
+/* voice: one tone (optionally two detuned copies), pitch glide, filter, reverb send */
+function voice(o){ const a=ac(); if(!a) return; const t=a.currentTime+(o.when||0), dur=o.dur||.2, n=o.detune?2:1;
+  const g=a.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime((o.vol||.1)/n,t+(o.att||.006)); if(o.hold) g.gain.setValueAtTime((o.vol||.1)/n,t+(o.att||.006)+o.hold); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  patchOut(a,g,o,t,dur);
+  const mk=det=>{ const osc=a.createOscillator(); osc.type=o.type||'sine'; osc.frequency.setValueAtTime(o.freq,t); if(o.freq2) osc.frequency.exponentialRampToValueAtTime(o.freq2,t+dur*(o.glide||1)); if(det) osc.detune.value=det; osc.connect(g); osc.start(t); osc.stop(t+dur+.05); };
+  mk(o.detune||0); if(o.detune) mk(-o.detune);
+}
+/* hiss: filtered noise burst (card swishes, clicks, air) */
+function hiss(o){ const a=ac(); if(!a) return; const t=a.currentTime+(o.when||0), dur=o.dur||.1;
+  const src=a.createBufferSource(); src.buffer=noiseBuf(a); src.loop=true;
+  const hp=a.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=o.hp||120;
+  const lp=a.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(o.lp||8000,t); if(o.lpTo) lp.frequency.exponentialRampToValueAtTime(o.lpTo,t+dur); lp.Q.value=o.q||.8;
+  const g=a.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(o.vol||.1,t+(o.att||.004)); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  src.connect(hp); hp.connect(lp); lp.connect(g); const B=bus(a); g.connect(B.dry); if(o.rev){ const s=a.createGain(); s.gain.value=o.rev; g.connect(s); s.connect(B.rev); }
+  src.start(t); src.stop(t+dur+.05);
+}
+function drum(when,f){ voice({type:'sine',freq:f||170,freq2:48,dur:.16,vol:.3,when,glide:.6}); hiss({dur:.05,hp:200,lp:1400,vol:.3,when}); }
 const SFX={
-  flip:()=>tone(880,.09,'triangle',.11,0,440),
-  deal:()=>tone(320,.14,'sawtooth',.05,0,110),
-  tick:()=>tone(1500,.03,'square',.035),
-  win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.11)),
-  lose:()=>{ tone(320,.35,'sawtooth',.1,0,190); tone(230,.55,'sawtooth',.09,.3,120); },
-  tam:()=>{ tone(660,.1,'square',.08); tone(880,.16,'square',.08,.1); },
-  sms:()=>{ tone(1175,.09,'sine',.12); tone(1568,.14,'sine',.12,.1); },
-  beep:(n)=>tone(n<=2?1320:880,.12,'square',.09),
-  buzz:()=>{ tone(220,.4,'sawtooth',.12,0,160); tone(165,.5,'sawtooth',.1,.25,110); }
+  flip:()=>{ hiss({dur:.11,hp:1500,lp:6500,lpTo:2500,vol:.9,rev:.1}); voice({type:'sine',freq:1900,dur:.04,vol:.12,when:.02}); },
+  deal:()=>{ hiss({dur:.17,hp:250,lp:3200,lpTo:450,vol:1,rev:.12}); voice({type:'sine',freq:150,freq2:70,dur:.08,vol:.24}); },
+  snap:()=>{ voice({type:'triangle',freq:460,freq2:170,dur:.07,vol:.32}); hiss({dur:.05,hp:2500,lp:9000,vol:.7}); voice({type:'sine',freq:1200,dur:.05,vol:.1,when:.01,rev:.15}); },
+  fail:()=>{ voice({type:'sawtooth',freq:170,freq2:92,dur:.32,vol:.22,lp:700,lpTo:250,rev:.2}); voice({type:'sine',freq:95,freq2:60,dur:.26,vol:.3,when:.02}); },
+  tick:()=>{ voice({type:'sine',freq:2200,dur:.03,vol:.14}); voice({type:'sine',freq:4400,dur:.018,vol:.04}); },
+  win:()=>{ [523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>voice({type:'triangle',freq:f,dur:.95,vol:.16,detune:6,rev:.55,when:i*.085,att:.01})); voice({type:'sine',freq:261.6,dur:1.5,vol:.1,rev:.5,att:.25}); hiss({dur:.6,hp:5000,lp:11000,vol:.1,rev:.5,when:.35}); },
+  lose:()=>{ voice({type:'sawtooth',freq:330,freq2:247,dur:.45,vol:.14,lp:900,lpTo:400,rev:.3}); voice({type:'sawtooth',freq:262,freq2:165,dur:.75,vol:.14,lp:700,lpTo:220,rev:.35,when:.3}); voice({type:'sine',freq:82,dur:.9,vol:.14,when:.3}); },
+  tam:()=>{ drum(0,180); drum(.17,150); voice({type:'triangle',freq:784,dur:.5,vol:.1,detune:5,rev:.4,when:.32}); voice({type:'triangle',freq:1175,dur:.8,vol:.1,detune:5,rev:.5,when:.44}); },
+  chime:()=>{ voice({type:'sine',freq:987.8,dur:.35,vol:.2,rev:.4}); voice({type:'sine',freq:1318.5,dur:.6,vol:.2,rev:.5,when:.12}); voice({type:'sine',freq:1975.5,dur:.5,vol:.07,rev:.5,when:.12}); },
+  sms:()=>{ voice({type:'sine',freq:1318.5,dur:.16,vol:.22,rev:.35}); voice({type:'sine',freq:1760,dur:.34,vol:.22,rev:.45,when:.1}); voice({type:'sine',freq:2637,dur:.25,vol:.05,rev:.45,when:.1}); },
+  beep:(n)=>{ const f=n<=2?880:659.25; voice({type:'sine',freq:f,dur:.26,vol:.7,rev:.25}); voice({type:'sine',freq:f*2.01,dur:.12,vol:.2}); voice({type:'sine',freq:f*3.98,dur:.06,vol:.08}); },
+  buzz:()=>{ drum(0,80); voice({type:'triangle',freq:196,freq2:188,dur:1.3,vol:.45,detune:9,rev:.5}); voice({type:'sine',freq:392,dur:1.1,vol:.1,rev:.5}); hiss({dur:.5,hp:300,lp:1200,vol:.12,rev:.4}); },
+  surprise:()=>{ [1046.5,1318.5,1568,2093,2637].forEach((f,i)=>voice({type:'sine',freq:f,dur:.4,vol:.16,rev:.55,when:i*.055})); hiss({dur:.45,hp:5000,lp:12000,vol:.14,rev:.5}); }
 };
+function soundForLog(t){ if(/rate son collage/.test(t)) SFX.fail(); else if(/ colle /.test(t)) SFX.snap(); else if(/annonce TamTam|n’a plus de carte/.test(t)) SFX.tam(); }
 document.addEventListener('pointerdown',()=>{ if(!muted) ac(); },{passive:true});
 
 /* ---------- Deal animation + who starts (client-side only) ---------- */
 let dealTimers=[];
 function dealAbort(){ dealTimers.forEach(clearTimeout); dealTimers=[]; document.querySelectorAll('.fly.dealghost').forEach(g=>g.remove()); if(ui.dealing){ ui.dealing=false; ui.dealt=null; } }
 function afterDeal(st){ if(!G||G.round!==st.round) return; if(G.draw) runDrawOverlay(G); else showStarter(); }
-function showStarter(){ if(!G||G.phase==='over') return; ui.starter={k:G.turn,round:G.round,until:Date.now()+4500}; SFX.tam(); render(); setTimeout(render,4550); }
+function showStarter(){ if(!G||G.phase==='over') return; ui.starter={k:G.turn,round:G.round,until:Date.now()+4500}; SFX.chime(); render(); setTimeout(render,4550); }
 function dealAnim(st){
   dealAbort();
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){ afterDeal(st); return; }
@@ -1352,7 +1383,7 @@ function animateMoves(before,after){
 }
 function flashIds(ids){ ids.forEach(id=>{ const el=document.querySelector(`[data-cid="${id}"]`); if(el){ el.classList.add('lift'); setTimeout(()=>el.classList.remove('lift'),PACE.flash); } }); }
 
-let lastSeq=-1, lastTurnKey='', lastFx=-1;
+let lastSeq=-1, lastTurnKey='', lastFx=-1, lastLogKey='';
 const _render=render;
 render=function(){
   try{ chatTick(); renderSheet(); }catch(e){}
@@ -1365,6 +1396,7 @@ render=function(){
   else if(G.phase==='peek'&&ui.dealRound!==G.round&&document.querySelector('.screen')){ ui.dealRound=G.round; dealAnim(G); }
   try{ botTick(); }catch(e){}
   if(changed){
+    const l0=(G.log||[])[0]; const lk=l0?l0.ts+'|'+l0.t:''; if(lk!==lastLogKey){ if(lastLogKey&&lastSeq>=0&&!G.silent&&G.phase==='play') try{ soundForLog(l0.t); }catch(e){} lastLogKey=lk; }
     lastSeq=G.seq;
     if(before && !G.silent && document.querySelector('.screen') && !matchMedia('(prefers-reduced-motion: reduce)').matches) animateMoves(before,cardRects());
     if(G.fx&&G.fx.seq===G.seq&&lastFx!==G.seq&&!G.silent){ lastFx=G.seq; flashIds(G.fx.ids||[]); }

@@ -171,10 +171,28 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .banner.close{ font-size:15px; display:flex; align-items:center; justify-content:center; gap:10px; animation:closePulse .9s ease-in-out infinite; }
 .closetimer{ display:inline-grid; place-items:center; min-width:32px; height:32px; border-radius:50%; background:#fff; color:var(--danger); font-family:var(--num); font-weight:900; font-size:19px; flex:none; }
 @keyframes closePulse{ 50%{ box-shadow:0 0 0 6px rgba(229,72,77,.35); transform:scale(1.015); } }
-.rb{ display:inline-grid; place-items:center; width:18px; height:18px; flex:none; vertical-align:-4px; margin-left:4px; }
+.rb{ display:inline-grid; place-items:center; width:24px; height:24px; padding:2px; border-radius:50%; background:#FFF8E6; box-shadow:0 1px 4px rgba(0,0,0,.45); flex:none; vertical-align:-6px; margin-left:4px; }
 .rb svg{ width:100%; height:100%; display:block; }
-.rb.crown{ filter:drop-shadow(0 0 4px rgba(232,176,75,.75)); }
+.rb.crown{ box-shadow:0 0 0 2px rgba(232,176,75,.9), 0 0 10px rgba(232,176,75,.7); }
+.rb.donkey{ background:#EEF0F4; box-shadow:0 0 0 2px rgba(142,151,173,.9); }
 .seat .head .rb{ margin-left:0; }
+.seat.side-l .rb,.seat.side-t .rb,.seat.side-r .rb{ width:22px; height:22px; }
+@media (prefers-reduced-motion: no-preference){ .rb.pop{ animation:badgePop 1.2s cubic-bezier(.3,1.5,.5,1) both; } @keyframes badgePop{ 0%{ transform:scale(1) } 35%{ transform:scale(2.1) rotate(-10deg) } 65%{ transform:scale(1.9) rotate(8deg) } 100%{ transform:scale(1) } } }
+.rankbanner{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:5; pointer-events:none; display:flex; gap:14px; align-items:stretch; justify-content:center; max-width:94%; padding:12px 14px; border-radius:18px; background:rgba(11,15,26,.94); border:1px solid var(--line); box-shadow:0 10px 30px rgba(0,0,0,.55); }
+.rk{ display:flex; flex-direction:column; align-items:center; gap:4px; min-width:110px; text-align:center; }
+.rk .big{ width:72px; height:72px; display:block; }
+.rk .big svg{ width:100%; height:100%; display:block; }
+.rk .nm{ font-weight:700; font-size:15px; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rk .pts{ font-size:12px; color:var(--mute); }
+.rk.crown .nm{ color:#E8B04B; } .rk.donkey .nm{ color:#B9BFCC; }
+.rk.crown .big{ filter:drop-shadow(0 0 14px rgba(232,176,75,.85)); }
+@media (prefers-reduced-motion: no-preference){
+  .rankbanner{ animation:bannerPop .45s cubic-bezier(.2,.8,.2,1) both, bannerOut .45s ease 4.7s forwards; }
+  .rk.crown .big{ animation:crownDrop 1s cubic-bezier(.3,1.5,.5,1) .15s both; }
+  @keyframes crownDrop{ 0%{ transform:translateY(-90px) scale(.5) rotate(-25deg); opacity:0 } 60%{ opacity:1 } 100%{ transform:none; opacity:1 } }
+  .rk.donkey .big{ animation:donkeyIn .6s ease .9s both, wobble 1.1s ease-in-out 1.5s 2; }
+  @keyframes donkeyIn{ 0%{ transform:scale(.3) rotate(20deg); opacity:0 } 100%{ transform:none; opacity:1 } }
+}
 .surpmark{ position:absolute; left:50%; bottom:7%; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:13px; line-height:1; display:grid; place-items:center; z-index:3; box-shadow:0 0 12px rgba(200,240,60,.95); animation:twinkle 1.6s ease-in-out infinite; pointer-events:none; }
 .slot.mini .surpmark{ width:16px; height:16px; font-size:10px; }
 @keyframes twinkle{ 50%{ transform:translateX(-50%) scale(1.25) rotate(20deg); } }
@@ -342,7 +360,7 @@ function rankBadges(st){
   const tots=act.map(p=>p.total||0), mn=Math.min(...tots), mx=Math.max(...tots); if(mn===mx) return {};
   const out={}; st.players.forEach((p,k)=>{ if(p.waiting) return; if((p.total||0)===mn) out[k]='crown'; else if((p.total||0)===mx) out[k]='donkey'; }); return out;
 }
-function badgeHTML(kind){ return kind?`<span class="rb ${kind}" title="${kind==='crown'?'En tête du classement':'Dernier du classement'}">${ICON[kind]}</span>`:''; }
+function badgeHTML(kind){ return kind?`<span class="rb ${kind}${ui.rankPop!=null?' pop':''}" title="${kind==='crown'?'En tête du classement':'Dernier du classement'}">${ICON[kind]}</span>`:''; }
 const BOT_NAMES=['Nadia 🤖','Mehdi 🤖','Lina 🤖','Sofiane 🤖','Amel 🤖','Yacine 🤖'];
 const POWER_TXT={own:'regarder une de vos cartes',opp:'regarder une carte adverse',nine:'regarder deux cartes et échanger',ten:'échanger deux cartes adverses'};
 
@@ -986,11 +1004,14 @@ function renderTable(){
   const scoresHTML=!ui.board?'':`<aside class="board"><div class="bh">Points <span>/ ${st.limit}</span><button class="link x" data-a="board" aria-label="Fermer">✕</button></div><table>${st.players.map((p,k)=>({p,k})).sort((a,b)=>(a.p.total||0)-(b.p.total||0)).map(({p,k},r)=>`<tr class="${[k===i?'me':'',st.phase==='play'&&st.turn===k?'turn':'',r===0?'lead':''].join(' ').trim()}"><td class="r">${r+1}</td><td class="n">${esc(p.name)}${p.bot?' <small>🤖</small>':''}${p.waiting?' <small>⏳</small>':''}${badgeHTML(RB[k])}</td><td class="p${(p.total||0)>=0.8*st.limit?' warn':''}">${p.total||0}</td></tr>`).join('')}</table></aside>`;
   const last=(st.log||[])[0];
   const sbanner=sr?`<div class="startbanner">🎯 ${sr.k===i?'<b>Vous</b> commencez':`<b>${esc(st.players[sr.k].name)}</b> commence`}${st.round>1&&sr.k!==i?`<small>${st.draw&&st.draw.tie?'vainqueur du tirage':'gagnant de la manche précédente'}</small>`:''}</div>`:'';
+  const rk=ui.rank&&ui.rank.round===st.round&&ui.rank.until>Date.now()?ui.rank:null;
+  const rkHTML=(kind,title)=>{ const ps=st.players.filter((p,k)=>RB[k]===kind); if(!ps.length) return ''; return `<div class="rk ${kind}"><span class="big">${ICON[kind]}</span><span class="nm">${esc(ps.map(p=>p.name).join(' & '))}</span><span class="pts">${title} · ${ps[0].total||0} pts</span></div>`; };
+  const rbanner=rk?`<div class="rankbanner">${rkHTML('crown','en tête')}${rkHTML('donkey','tête d’âne')}</div>`:'';
   app.innerHTML=`<div class="screen${ui.dealing?' dealing':''}">
   <div class="bar"><span class="brand">TamTamDZ</span><span class="meta">${esc(st.code)} · manche ${st.round}${st.mode==='ultime'?' · ⚡':''}</span><span class="links"><button class="link${ui.board?' on':''}" data-a="board" aria-label="Points">🏆</button><button class="link" data-a="chat">💬</button><button class="link" data-a="mute">${muted?'🔇':'🔊'}</button><button class="link" data-a="rules">Règles</button>${i>=0?`<button class="link" data-a="leaveGame">Quitter</button>`:''}</span></div>
   ${ui.rules?`<div class="panel">${rulesHTML()}<button class="btn" data-a="rules">Fermer</button></div>`:''}
   ${scoresHTML}
-  <div class="felt">${sbanner}${seatsT}${seatsL}${seatsR}${seatsB}
+  <div class="felt">${sbanner}${rbanner}${seatsT}${seatsL}${seatsR}${seatsB}
     <div class="center">
       <div class="pile">${deckHTML}<span class="lbl">Pioche</span></div>
       <div class="pile">${discHTML}<span class="lbl">Défausse</span></div>
@@ -1236,7 +1257,7 @@ function hiss(o){ const a=ac(); if(!a) return; const t=a.currentTime+(o.when||0)
 function drum(when,f){ voice({type:'sine',freq:f||170,freq2:48,dur:.16,vol:.3,when,glide:.6}); hiss({dur:.05,hp:200,lp:1400,vol:.3,when}); }
 const SFX={
   flip:()=>{ hiss({dur:.11,hp:1500,lp:6500,lpTo:2500,vol:.9,rev:.1}); voice({type:'sine',freq:1900,dur:.04,vol:.12,when:.02}); },
-  deal:()=>{ hiss({dur:.17,hp:250,lp:3200,lpTo:450,vol:1,rev:.12}); voice({type:'sine',freq:150,freq2:70,dur:.08,vol:.24}); },
+  deal:()=>{ voice({type:'sawtooth',freq:320,freq2:110,dur:.14,vol:.2,att:.012}); },
   snap:()=>{ voice({type:'triangle',freq:460,freq2:170,dur:.07,vol:.32}); hiss({dur:.05,hp:2500,lp:9000,vol:.7}); voice({type:'sine',freq:1200,dur:.05,vol:.1,when:.01,rev:.15}); },
   fail:()=>{ voice({type:'sawtooth',freq:170,freq2:92,dur:.32,vol:.22,lp:700,lpTo:250,rev:.2}); voice({type:'sine',freq:95,freq2:60,dur:.26,vol:.3,when:.02}); },
   tick:()=>{ voice({type:'sine',freq:2200,dur:.03,vol:.14}); voice({type:'sine',freq:4400,dur:.018,vol:.04}); },
@@ -1247,6 +1268,8 @@ const SFX={
   sms:()=>{ voice({type:'sine',freq:1318.5,dur:.16,vol:.22,rev:.35}); voice({type:'sine',freq:1760,dur:.34,vol:.22,rev:.45,when:.1}); voice({type:'sine',freq:2637,dur:.25,vol:.05,rev:.45,when:.1}); },
   beep:(n)=>{ const f=n<=2?880:659.25; voice({type:'sine',freq:f,dur:.26,vol:.7,rev:.25}); voice({type:'sine',freq:f*2.01,dur:.12,vol:.2}); voice({type:'sine',freq:f*3.98,dur:.06,vol:.08}); },
   buzz:()=>{ drum(0,80); voice({type:'triangle',freq:196,freq2:188,dur:1.3,vol:.45,detune:9,rev:.5}); voice({type:'sine',freq:392,dur:1.1,vol:.1,rev:.5}); hiss({dur:.5,hp:300,lp:1200,vol:.12,rev:.4}); },
+  heehaw:()=>{ voice({type:'sawtooth',freq:420,freq2:640,dur:.26,vol:.2,lp:1800,rev:.2}); voice({type:'sawtooth',freq:330,freq2:190,dur:.42,vol:.22,lp:1200,rev:.25,when:.28}); },
+  crown:()=>{ [659.25,783.99,987.77,1318.5].forEach((f,i)=>voice({type:'triangle',freq:f,dur:.55,vol:.14,detune:5,rev:.5,when:i*.09})); },
   surprise:()=>{ [1046.5,1318.5,1568,2093,2637].forEach((f,i)=>voice({type:'sine',freq:f,dur:.4,vol:.16,rev:.55,when:i*.055})); hiss({dur:.45,hp:5000,lp:12000,vol:.14,rev:.5}); }
 };
 function soundForLog(t){ if(/rate son collage/.test(t)) SFX.fail(); else if(/ colle /.test(t)) SFX.snap(); else if(/annonce TamTam|n’a plus de carte/.test(t)) SFX.tam(); }
@@ -1256,7 +1279,16 @@ document.addEventListener('pointerdown',()=>{ if(!muted) ac(); },{passive:true})
 let dealTimers=[];
 function dealAbort(){ dealTimers.forEach(clearTimeout); dealTimers=[]; document.querySelectorAll('.fly.dealghost').forEach(g=>g.remove()); if(ui.dealing){ ui.dealing=false; ui.dealt=null; } }
 function afterDeal(st){ if(!G||G.round!==st.round) return; if(G.draw) runDrawOverlay(G); else showStarter(); }
-function showStarter(){ if(!G||G.phase==='over') return; ui.starter={k:G.turn,round:G.round,until:Date.now()+4500}; SFX.chime(); render(); setTimeout(render,4550); }
+function showStarter(){ if(!G||G.phase==='over') return; ui.starter={k:G.turn,round:G.round,until:Date.now()+4500}; SFX.chime(); render(); setTimeout(()=>{ render(); showRankIntro(); },4550); }
+/* Round opener: who wears the crown, who wears the donkey head */
+function showRankIntro(){
+  if(!G||G.phase==='over'||ui.rankRound===G.round) return;
+  const RB=rankBadges(G); const lead=G.players.filter((p,k)=>RB[k]==='crown'), last=G.players.filter((p,k)=>RB[k]==='donkey');
+  if(!lead.length||!last.length) return;
+  ui.rankRound=G.round; ui.rank={round:G.round,until:Date.now()+5200};
+  SFX.crown(); setTimeout(()=>SFX.heehaw(),900);
+  render(); setTimeout(()=>{ ui.rankPop=G.round; render(); setTimeout(()=>{ ui.rankPop=null; render(); },1400); },5250);
+}
 function dealAnim(st){
   dealAbort();
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){ afterDeal(st); return; }

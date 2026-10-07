@@ -80,11 +80,14 @@ NOUVEAUTÉS (dev-ameur)
   bandeau rouge) pendant lequel chacun peut encore coller, puis décompte.
 - Couronne sur le joueur en tête du classement général, tête d'âne sur le
   dernier, affichées pendant la partie et sur l'écran des scores.
-- Carte Surprise ✨ : chaque manche, une carte au hasard porte une étoile que
-  seul son détenteur voit (au moment où il la découvre). Au début de son tour
-  il peut échanger en secret une de ses cartes avec celle d'un adversaire :
-  aucune animation, aucun message pour les autres. Défaussée ou collée, la
-  surprise est perdue pour la manche.
+- Carte Surprise ✨ : chaque manche, une carte au hasard porte une étoile,
+  visible seulement par son détenteur et seulement quand la carte est face
+  visible pour lui (mémorisation, pioche, 7, 9) : à lui de retenir laquelle.
+  Au début de son tour, il peut échanger en secret une de ses cartes avec
+  celle d'un adversaire : aucune animation, aucun message pour les autres.
+  Le pouvoir suit la carte : prise par un adversaire lors d'un échange, c'est
+  lui qui pourra l'utiliser. Défaussée ou collée (même sans le savoir), elle
+  est perdue pour la manche.
 
 JOUEURS MACHINE
 ---------------

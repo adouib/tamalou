@@ -288,6 +288,7 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .rules td:first-child{ font-family:var(--num); white-space:nowrap; color:var(--accent); }
 details summary{ cursor:pointer; color:var(--mute); font-size:14px; }
 
+#toast.top{ bottom:auto; top:calc(52px + env(safe-area-inset-top,0px)); }
 #toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--accent); color:var(--accent-ink); padding:10px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:90vw; text-align:center; z-index:10; display:none; }
 @media (prefers-reduced-motion: no-preference){
   .hand.myturn{ animation:glow 2.2s ease-in-out infinite; }
@@ -362,7 +363,7 @@ function mi(st){ const who=ACTOR||ME; return st?st.players.findIndex(p=>p.id===w
 function top(st){ return st.discard.length?st.discard[st.discard.length-1]:null; }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 let toastT;
-function toast(msg){ toastEl.textContent=msg; toastEl.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>toastEl.style.display='none',3200); }
+function toast(msg,top){ toastEl.textContent=msg; toastEl.classList.toggle('top',!!top); toastEl.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>toastEl.style.display='none',msg.length>80?6000:3200); }
 
 /* ---------- Game logic (runs inside a locked read-modify-write) ---------- */
 function log(st,t){ st.log=[{t,ts:Date.now()}].concat(st.log||[]).slice(0,30); }
@@ -825,7 +826,9 @@ function slotHTML(st,p,s,size,it){
   const seen=(up&&((ui.reveal&&ui.reveal.ids.includes(c.id))||(st.nineLook&&st.nineLook.ids.includes(c.id)&&st.turn===mi(st))))?' seen':'';
   const tappable=pick||canColler(st);
   const cls=`slot ${size}${pick?' pick':''}${sel}${seen}${ui.dealt&&ui.dealt.has(p+':'+s)?' dealt':''}`;
-  const sm=(p===mi(st)&&st.surpriseId!=null&&c.id===st.surpriseId&&st.surpriseKnown===mi(st))?'<span class="surpmark" title="Carte Surprise">✨</span>':'';
+  const me0=mi(st), showMark=up&&st.surpriseId!=null&&c.id===st.surpriseId&&(p===me0||(st.nineLook&&st.turn===me0&&st.nineLook.ids.includes(c.id)));
+  if(showMark) ui._surpSeen=true;
+  const sm=showMark?'<span class="surpmark" title="Carte Surprise">✨</span>':'';
   const inner=(up?face(c):'<span class="back"></span>')+sm;
   return tappable?`<button class="${cls}" data-cid="${c.id}" data-p="${p}" data-s="${s}" aria-label="Carte ${s+1} de ${esc(st.players[p].name)}">${inner}</button>`:`<span class="${cls}" data-cid="${c.id}" data-p="${p}" data-s="${s}">${inner}</span>`;
 }
@@ -841,7 +844,7 @@ function rulesHTML(){
   <tr><td>8</td><td>Regardez la carte d’un autre joueur.</td></tr>
   <tr><td>9</td><td>Regardez une de vos cartes et une carte adverse. Une fois vues, l’échange est obligatoire.</td></tr>
   <tr><td>10</td><td>À 3 joueurs ou plus : échangez sans les voir deux cartes de deux autres joueurs.</td></tr>
-  <tr><td>✨</td><td>Carte Surprise : à chaque manche, une carte au hasard porte une étoile que seul son détenteur voit. Au début de son tour, il peut échanger en secret une de ses cartes avec celle d’un adversaire : aucune animation, personne n’est prévenu. Si la carte est défaussée ou collée, la surprise est perdue pour la manche.</td></tr>
+  <tr><td>✨</td><td>Carte Surprise : à chaque manche, une carte au hasard porte une étoile. Elle n’apparaît qu’à son détenteur, et seulement quand la carte est face visible pour lui (mémorisation du début, pioche, regard avec un 7 ou un 9) : à lui de se souvenir de laquelle il s’agit. Au début de son tour, il peut échanger en secret une de ses cartes avec celle d’un adversaire : aucune animation, personne n’est prévenu. Le pouvoir suit la carte : si un adversaire l’obtient par un échange, c’est lui qui pourra l’utiliser. Défaussée ou collée, même sans le savoir, elle est perdue pour la manche.</td></tr>
   </table>
   <p class="note">Fin de manche : quand quelqu’un annonce TamTam ou n’a plus de carte, un compte à rebours de 5 secondes laisse à tous une dernière chance de coller avant le décompte des points.</p>
   <p class="note">Égalité de points : on départage par le nombre de cartes en main (le moins), puis l’absence de Joker, puis le nombre d’échanges de cartes dans la manche (le moins), puis un tirage de carte. Pas de départage pour l’annonceur du TamTam (il perd l’égalité) ni pour un joueur sans carte (il gagne). Pendant la partie, le joueur en tête porte une couronne et le dernier une tête d’âne.</p>
@@ -903,6 +906,7 @@ function renderTable(){
   const tp=top(st), me=i>=0?st.players[i]:null, cur=st.players[st.turn];
   const closing=st.phase==='play'&&!!st.closing;
   const myTurn=st.phase==='play'&&st.turn===i&&!closing;
+  ui._surpSeen=false;
   const sr=ui.starter&&ui.starter.round===st.round&&ui.starter.until>Date.now()?ui.starter:null;
   const RB=rankBadges(st);
   const seatHTML=(k,sc,pos)=>{ const p=st.players[k]; const nb=count(p);
@@ -924,7 +928,7 @@ function renderTable(){
   let heldHTML='';
   if(st.held){
     const up=myTurn||st.heldFrom==='discard';
-    const smark=(myTurn&&st.held.id===st.surpriseId)?'<span class="surpmark" title="Carte Surprise">✨</span>':'';
+    const smark=(myTurn&&st.held.id===st.surpriseId)?'<span class="surpmark" title="Carte Surprise">✨</span>':''; if(smark) ui._surpSeen=true;
     heldHTML=`<div class="pile"><span class="slot mid held" data-cid="${st.held.id}">${up?face(st.held):'<span class="back"></span>'}${smark}</span><span class="lbl">${myTurn?'<b>Votre carte</b>':'En main : '+esc(cur.name)}</span></div>`;
   }
   // status, chips, banner
@@ -955,7 +959,7 @@ function renderTable(){
     } else if(st.step==='drawn'){
       const pw=powerAvail(st,st.held,i);
       status=`Touchez <b>une de vos cartes</b> pour la remplacer par ${cname(st.held)}, ou <b>la défausse</b> pour le défausser${pw?` et pouvoir ${POWER_TXT[pw]}`:''}.`;
-      if(st.held.id===st.surpriseId) status+=' <b>✨ C’est la carte Surprise !</b> Gardez-la : vous pourrez échanger une carte en secret au prochain tour. Chut 🤫';
+      if(st.held.id===st.surpriseId) status+=' <b>✨ C’est la carte Surprise !</b> Gardez-la pour utiliser son pouvoir au prochain tour. Chut 🤫';
     } else if(st.step==='fromDiscard'){
       status=`Touchez <b>la carte à remplacer</b> par ${cname(st.held)}.`;
     } else if(st.step==='power'){
@@ -975,7 +979,7 @@ function renderTable(){
     status=`<b>${esc(cur.name)}</b>${what}.`+collerHint;
   }
   const hostbar=(st.host===ME && st.phase==='play' && st.turn!==i && !closing)?`<button class="link" data-a="skipTurn">Passer le tour de ${esc(cur.name)}</button>`:'';
-  const secret=(i>=0&&!me.waiting&&st.phase!=='reveal'&&canSurprise(st,i)&&!myTurn)?`<div class="secret">✨ Vous tenez la carte Surprise. Au début de votre tour, échangez en secret une de vos cartes avec celle d’un adversaire. Chut, ne dites rien 🤫</div>`:'';
+  const secret='';
   const mine=me?`<div class="hand${myTurn?' myturn':''}${sr&&sr.k===i?' starter':''}">
       ${me.waiting?'<p class="note">Vous jouerez dès la prochaine manche. Regardez la partie en attendant.</p>':`<div class="cards"><div class="grid">${me.slots.slice(0,4).map((_,s)=>slotHTML(st,i,s,'big',it)).join('')}</div>${me.slots.length>4?`<div class="extra side">${me.slots.map((_,s)=>s>=4?slotHTML(st,i,s,'big',it):'').join('')}</div>`:''}</div>`}
       <div class="who">${esc(me.name)} · ${me.total||0} pts${badgeHTML(RB[i])}</div>${secret}</div>`:'';
@@ -1000,6 +1004,7 @@ function renderTable(){
     ${mine}
     <div class="log">${last?esc(last.t):''}${last&&hostbar?' · ':''}${hostbar}</div>
   </div></div>`;
+  if(ui._surpSeen&&ui.surpToastRound!==st.round){ ui.surpToastRound=st.round; toast('✨ Carte Surprise ! Au début de votre tour, vous pourrez échanger en secret une de vos cartes avec celle d’un adversaire. Chut 🤫',true); }
 }
 function showOrder(st){
   const c=st.caller, idx=st.players.map((_,k)=>k).filter(k=>!st.players[k].waiting);

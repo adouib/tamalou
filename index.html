@@ -168,6 +168,21 @@ input.code{ text-transform:uppercase; letter-spacing:.3em; font-family:var(--num
 .status b{ color:var(--accent); font-weight:600; }
 .banner{ text-align:center; background:var(--danger); color:#fff; border-radius:10px; padding:7px 12px; font-weight:600; font-size:13px; }
 .banner.give{ background:var(--accent); color:var(--accent-ink); }
+.banner.close{ font-size:15px; display:flex; align-items:center; justify-content:center; gap:10px; animation:closePulse .9s ease-in-out infinite; }
+.closetimer{ display:inline-grid; place-items:center; min-width:32px; height:32px; border-radius:50%; background:#fff; color:var(--danger); font-family:var(--num); font-weight:900; font-size:19px; flex:none; }
+@keyframes closePulse{ 50%{ box-shadow:0 0 0 6px rgba(229,72,77,.35); transform:scale(1.015); } }
+.rb{ display:inline-grid; place-items:center; width:18px; height:18px; flex:none; vertical-align:-4px; margin-left:4px; }
+.rb svg{ width:100%; height:100%; display:block; }
+.rb.crown{ filter:drop-shadow(0 0 4px rgba(232,176,75,.75)); }
+.seat .head .rb{ margin-left:0; }
+.surpmark{ position:absolute; left:50%; bottom:7%; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:13px; line-height:1; display:grid; place-items:center; z-index:3; box-shadow:0 0 12px rgba(200,240,60,.95); animation:twinkle 1.6s ease-in-out infinite; pointer-events:none; }
+.slot.mini .surpmark{ width:16px; height:16px; font-size:10px; }
+@keyframes twinkle{ 50%{ transform:translateX(-50%) scale(1.25) rotate(20deg); } }
+.secret{ margin-top:6px; font-size:12px; color:var(--accent); text-align:center; max-width:46ch; line-height:1.35; }
+.chip.surp{ background:linear-gradient(135deg,#C8F03C,#7BC043); color:var(--accent-ink); border-color:transparent; box-shadow:0 0 12px rgba(200,240,60,.6); }
+.tiebreak{ text-align:center; font-size:13px; color:var(--mute); padding:0 8px; line-height:1.4; }
+.tiebreak b{ color:var(--accent); }
+.tiefinal b{ color:var(--accent); }
 .chips{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; position:sticky; bottom:calc(10px + env(safe-area-inset-bottom,0px)); z-index:6; filter:drop-shadow(0 4px 12px rgba(0,0,0,.55)); }
 .chips:empty{ display:none; }
 .chip{ border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; background:var(--surface2); border:1px solid var(--line); line-height:1.1; }
@@ -317,6 +332,16 @@ const RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const LABEL={A:'A',J:'V',Q:'D',K:'R',JK:'★'};
 const SUIT={h:'♥',d:'♦',s:'♠',c:'♣',x:''};
 const ART={K:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M13 82 Q13 58 30 56 Q47 58 47 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><path d="M22 60 L30 82 L38 60" fill="#FFF" opacity=".85"/><path d="M50 22 L54 70" stroke="#A9AFB8" stroke-width="3.2" stroke-linecap="round"/><path d="M46 60 L58 60" stroke="#E3B341" stroke-width="3.2" stroke-linecap="round"/><path d="M20 50 Q30 66 40 50 L40 44 L20 44Z" fill="#15181F"/><circle cx="30" cy="40" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="39" r="1.3" fill="#15181F"/><circle cx="34" cy="39" r="1.3" fill="#15181F"/><path d="M14 30 L18 15 L25 25 L30 10 L35 25 L42 15 L46 30Z" fill="#E3B341" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="30" cy="10" r="2.4" fill="currentColor"/><circle cx="18" cy="15" r="2" fill="currentColor"/><circle cx="42" cy="15" r="2" fill="currentColor"/></svg>`,Q:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M11 82 Q13 56 30 54 Q47 56 49 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><path d="M24 58 Q30 72 36 58" fill="none" stroke="#FFF" stroke-width="1.6" opacity=".8"/><path d="M19 36 Q14 50 18 60 Q22 48 22 38Z" fill="#15181F"/><path d="M41 36 Q46 50 42 60 Q38 48 38 38Z" fill="#15181F"/><circle cx="30" cy="40" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="39" r="1.3" fill="#15181F"/><circle cx="34" cy="39" r="1.3" fill="#15181F"/><path d="M26 45 Q30 48 34 45" fill="none" stroke="#15181F" stroke-width="1.2" stroke-linecap="round"/><path d="M19 30 L22 20 L27 27 L30 16 L33 27 L38 20 L41 30Z" fill="#E3B341" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="30" cy="16" r="2.2" fill="currentColor"/><path d="M48 68 L48 54" stroke="#3B8A4E" stroke-width="2" stroke-linecap="round"/><circle cx="48" cy="52" r="3.2" fill="currentColor"/><circle cx="44.5" cy="55" r="2.6" fill="currentColor"/><circle cx="51.5" cy="55" r="2.6" fill="currentColor"/><circle cx="48" cy="55" r="1.6" fill="#E3B341"/></svg>`,J:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M13 82 Q13 58 30 56 Q47 58 47 82Z" fill="currentColor" stroke="#15181F" stroke-width="1.3"/><rect x="26" y="60" width="8" height="22" fill="#FFF" opacity=".85"/><path d="M52 14 L52 76" stroke="#7B5B3A" stroke-width="2.6" stroke-linecap="round"/><path d="M52 14 L46 20 L52 30 L58 22Z" fill="#A9AFB8" stroke="#15181F" stroke-width="1.2" stroke-linejoin="round"/><circle cx="30" cy="42" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="41" r="1.3" fill="#15181F"/><circle cx="34" cy="41" r="1.3" fill="#15181F"/><path d="M18 36 Q20 20 34 22 Q44 24 42 34 Q30 30 18 36Z" fill="currentColor" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><path d="M38 24 Q46 12 50 8 Q46 20 40 28" fill="#E3B341" stroke="#15181F" stroke-width="1.2" stroke-linejoin="round"/></svg>`,JK:`<svg viewBox="0 0 60 84" aria-hidden="true"><path d="M12 82 Q14 58 30 56 Q46 58 48 82Z" fill="#7BC043" stroke="#15181F" stroke-width="1.3"/><path d="M22 58 L30 70 L38 58" fill="#D93C44"/><circle cx="30" cy="42" r="10" fill="#F7E4CC" stroke="#15181F" stroke-width="1.3"/><circle cx="26" cy="41" r="1.3" fill="#15181F"/><circle cx="34" cy="41" r="1.3" fill="#15181F"/><path d="M24 45 Q30 51 36 45" fill="none" stroke="#15181F" stroke-width="1.4" stroke-linecap="round"/><path d="M19 36 Q10 20 14 8 Q22 20 24 30 Q28 10 30 4 Q32 10 36 30 Q38 20 46 8 Q50 20 41 36Z" fill="#D93C44" stroke="#15181F" stroke-width="1.3" stroke-linejoin="round"/><circle cx="14" cy="8" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/><circle cx="30" cy="4" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/><circle cx="46" cy="8" r="2.6" fill="#E3B341" stroke="#15181F" stroke-width="1"/></svg>`};
+const ICON={
+  crown:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h18l1.5-10-5.5 4L12 4 7 11 1.5 7z" fill="#E8B04B" stroke="#7A4F00" stroke-width="1.2" stroke-linejoin="round"/><rect x="3" y="17" width="18" height="3.5" rx="1" fill="#E8B04B" stroke="#7A4F00" stroke-width="1.2"/><circle cx="12" cy="4" r="1.7" fill="#E5484D"/><circle cx="1.8" cy="7" r="1.5" fill="#4C9BE5"/><circle cx="22.2" cy="7" r="1.5" fill="#4C9BE5"/><circle cx="12" cy="13.5" r="1.4" fill="#E5484D"/></svg>`,
+  donkey:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 1.5 8.2 9M18.5 1.5 15.8 9" stroke="#8E8E8E" stroke-width="3.6" stroke-linecap="round"/><path d="M5.5 1.5 8.2 9M18.5 1.5 15.8 9" stroke="#E8A0A0" stroke-width="1.3" stroke-linecap="round"/><ellipse cx="12" cy="13.5" rx="7" ry="7.5" fill="#A8A8A8" stroke="#4A4A4A" stroke-width="1.2"/><path d="M8.5 7.5q3.5-2 7 0" stroke="#4A4A4A" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="12" cy="17.5" rx="4.6" ry="3.4" fill="#DADADA" stroke="#4A4A4A" stroke-width="1"/><circle cx="10.4" cy="18" r=".9" fill="#4A4A4A"/><circle cx="13.6" cy="18" r=".9" fill="#4A4A4A"/><circle cx="9.4" cy="12" r="1.1" fill="#1D1B24"/><circle cx="14.6" cy="12" r="1.1" fill="#1D1B24"/></svg>`
+};
+function rankBadges(st){
+  const act=st.players.filter(p=>!p.waiting); if(act.length<2) return {};
+  const tots=act.map(p=>p.total||0), mn=Math.min(...tots), mx=Math.max(...tots); if(mn===mx) return {};
+  const out={}; st.players.forEach((p,k)=>{ if(p.waiting) return; if((p.total||0)===mn) out[k]='crown'; else if((p.total||0)===mx) out[k]='donkey'; }); return out;
+}
+function badgeHTML(kind){ return kind?`<span class="rb ${kind}" title="${kind==='crown'?'En tête du classement':'Dernier du classement'}">${ICON[kind]}</span>`:''; }
 const BOT_NAMES=['Nadia 🤖','Mehdi 🤖','Lina 🤖','Sofiane 🤖','Amel 🤖','Yacine 🤖'];
 const POWER_TXT={own:'regarder une de vos cartes',opp:'regarder une carte adverse',nine:'regarder deux cartes et échanger',ten:'échanger deux cartes adverses'};
 
@@ -324,6 +349,9 @@ function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); if(v===
 function esc(t){ return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function val(c){ if(c.r==='JK')return -1; if(c.r==='A')return 1; if(c.r==='J'||c.r==='Q')return 10; if(c.r==='K')return (c.s==='h'||c.s==='d')?0:(c.s==='s'?21:10); return +c.r; }
 function powerOf(r){ return r==='7'?'own':r==='8'?'opp':r==='9'?'nine':r==='10'?'ten':null; }
+function holderOf(st){ return st.surpriseId==null?-1:st.players.findIndex(p=>p.slots.some(c=>c&&c.id===st.surpriseId)); }
+function canSurprise(st,k){ return st.surpriseId!=null && st.surpriseKnown===k && holderOf(st)===k; }
+function loseSurprise(st,c){ if(c&&st.surpriseId!=null&&c.id===st.surpriseId){ st.surpriseId=null; st.surpriseKnown=null; } }
 function powerAvail(st,c,i){ const pw=powerOf(c.r); if(!pw) return null; if(pw==='ten' && st.players.filter((q,k)=>k!==i&&count(q)>0).length<2) return null; return pw; }
 function cname(c){ return c.r==='JK'?'un Joker':(LABEL[c.r]||c.r)+SUIT[c.s]; }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -349,19 +377,22 @@ function drawCard(st){
 function deal(st){
   st.round=(st.round||0)+1;
   const d=newDeck();
-  st.players.forEach(p=>{ p.slots=[d.pop(),d.pop(),d.pop(),d.pop()]; p.waiting=false; p.ready=!!p.bot; p.hand=null; if(p.bot) p.bot.known={2:p.slots[2].id,3:p.slots[3].id}; });
+  st.players.forEach(p=>{ p.slots=[d.pop(),d.pop(),d.pop(),d.pop()]; p.waiting=false; p.ready=!!p.bot; p.hand=null; p.swaps=0; if(p.bot) p.bot.known={2:p.slots[2].id,3:p.slots[3].id}; });
   // first visible card must be worth more than 1
   const rejected=[]; let first=d.pop(); while(first && val(first)<=1){ rejected.push(first); first=d.pop(); }
   st.discard=[first]; st.deck=shuffle(d.concat(rejected));
+  // the Surprise card: one random card (never the first discard); only its holder ever sees the mark
+  const pool=st.deck.concat(...st.players.map(p=>p.slots.filter(Boolean)));
+  const spc=pool[Math.floor(Math.random()*pool.length)]; st.surpriseId=spc?spc.id:null; st.surpriseKnown=null;
+  st.players.forEach((p,k)=>{ if(p.slots.some((c,s)=>c&&s>=2&&c.id===st.surpriseId)) st.surpriseKnown=k; });
+  st.closing=null; st.finalTie=null;
   // who starts: round 1 → each player draws a card, highest starts; afterwards the winner of the previous round
   st.draw=null;
   // tied round winners → card draw between them only
   const tie=st.round>1&&st.tieStart?st.tieStart.filter(k=>k<st.players.length):[]; st.tieStart=null;
   if(st.round===1 || st.nextStarter==null || st.nextStarter>=st.players.length || tie.length>1){
-    const dd=newDeck(); let pool=tie.length>1&&st.round>1?tie.slice():st.players.map((_,k)=>k), cards={};
-    let guard=0;
-    while(pool.length>1 && guard++<10){ const vals=pool.map(k=>{ cards[k]=dd.pop(); return val(cards[k]); }); const mn=Math.min(...vals); const keep=pool.filter((k,j)=>vals[j]===mn); if(keep.length===pool.length){ pool=[pool[Math.floor(Math.random()*pool.length)]]; } else pool=keep; }
-    st.turn=pool[0]; st.draw={cards:st.players.map((_,k)=>cards[k]||null),winner:pool[0],tie:tie.length>1&&st.round>1};
+    const dl=drawLots(tie.length>1&&st.round>1?tie:st.players.map((_,k)=>k));
+    st.turn=dl.winner; st.draw={cards:st.players.map((_,k)=>dl.cards[k]||null),winner:dl.winner,tie:tie.length>1&&st.round>1};
   } else st.turn=st.nextStarter;
   st.phase='peek'; st.step='start'; st.collageDone=false; st.turnStart=Date.now();
   st.held=null; st.heldFrom=null; st.power=null; st.nineLook=null; st.caller=null; st.gives=[]; st.callerWon=null;
@@ -370,8 +401,32 @@ function deal(st){
 function endTurn(st){
   st.held=null; st.heldFrom=null; st.power=null; st.nineLook=null; st.step='start';
   const n=st.players.length; let nx=st.turn;
-  for(let g=0;g<n;g++){ nx=(nx+1)%n; if(st.caller!==null && nx===st.caller){ endRound(st); return; } if(!st.players[nx].waiting) break; }
+  for(let g=0;g<n;g++){ nx=(nx+1)%n; if(st.caller!==null && nx===st.caller){ startClosing(st,'last'); return; } if(!st.players[nx].waiting) break; }
   st.turn=nx; st.turnStart=Date.now();
+}
+/* Card draw between candidates: lowest card wins (Joker, red king, ace…); ties redraw */
+function drawLots(cands){
+  const dd=newDeck(); let pool=cands.slice(), cards={}, guard=0;
+  while(pool.length>1&&guard++<10){ const vals=pool.map(k=>{ cards[k]=dd.pop(); return val(cards[k]); }); const mn=Math.min(...vals); const keep=pool.filter((k,j)=>vals[j]===mn); pool=keep.length===pool.length?[pool[Math.floor(Math.random()*pool.length)]]:keep; }
+  return {winner:pool[0],cards};
+}
+/* Tie-break between players with the same total: fewer cards, no Joker, fewer exchanges this round, then a card draw */
+const TIE_RULES={cards:'moins de cartes en main',joker:'pas de Joker en main',swaps:'moins d’échanges de cartes dans la manche',draw:'tirage au sort'};
+function tieBreak(st,cands){
+  const P=st.players; let rest=cands.slice();
+  const steps=[['cards',k=>count(P[k])],['joker',k=>P[k].slots.some(c=>c&&c.r==='JK')?1:0],['swaps',k=>P[k].swaps||0]];
+  for(const [rule,f] of steps){ const vals=rest.map(f), mn=Math.min(...vals); const keep=rest.filter((k,j)=>vals[j]===mn); if(keep.length===1) return {winner:keep[0],rule,rest:[keep[0]],detail:rest.map((k,j)=>P[k].name+' '+vals[j]).join(' · ')}; rest=keep; }
+  return {winner:rest[0],rule:'draw',rest};
+}
+/* 5-second window to coller before the round is scored */
+const CLOSE_MS=5000;
+function startClosing(st,reason){
+  if(st.closing||st.phase!=='play') return;
+  if(st.held){ st.deck.push(st.held); st.held=null; st.heldFrom=null; }
+  st.step='start'; st.power=null; st.nineLook=null;
+  st.closing={until:Date.now()+CLOSE_MS,reason};
+  const who=st.caller!=null?st.players[st.caller].name:'';
+  log(st, reason==='tamtam'?`${who} annonce TamTam ! ${CLOSE_MS/1000} secondes pour coller`:reason==='empty'?`${who} n’a plus de carte ! ${CLOSE_MS/1000} secondes pour coller`:`Dernier tour terminé : ${CLOSE_MS/1000} secondes pour coller`);
 }
 function endRound(st){
   st.phase='reveal'; st.held=null; st.power=null; st.nineLook=null; st.step='start';
@@ -390,22 +445,34 @@ function endRound(st){
   });
   st.callerWon=c==null?null:strict; st.gives=[];
   if(c!=null) log(st, emptied?`${st.players[c].name} n’a plus de carte et gagne la manche : 0 point`:strict?`${st.players[c].name} réussit son TamTam : 0 point`:`${st.players[c].name} rate son TamTam et prend ${othersSum} points`);
-  // the round winner starts the next round
-  st.tieStart=null;
+  // the round winner starts the next round (ties: fewer cards → no Joker → fewer exchanges → card draw at the next deal)
+  st.tieStart=null; st.tieInfo=null; st.closing=null;
   if(c!=null&&strict) st.nextStarter=c;
-  else { let bv=Infinity; st.players.forEach((p,k)=>{ if(k!==c&&!p.waiting&&sums[k]<bv) bv=sums[k]; }); const tied=st.players.map((p,k)=>k).filter(k=>k!==c&&!st.players[k].waiting&&sums[k]===bv); st.nextStarter=tied.length?tied[0]:0; if(tied.length>1) st.tieStart=tied; }
-  if(st.players.some(p=>p.total>(st.limit||100))) st.phase='over';
+  else {
+    let bv=Infinity; st.players.forEach((p,k)=>{ if(k!==c&&!p.waiting&&sums[k]<bv) bv=sums[k]; });
+    const tied=st.players.map((p,k)=>k).filter(k=>k!==c&&!st.players[k].waiting&&sums[k]===bv);
+    if(tied.length>1){ const tb=tieBreak(st,tied); st.nextStarter=tb.winner; st.tieInfo={names:tied.map(k=>st.players[k].name),winner:st.players[tb.winner].name,rule:tb.rule,pts:bv,detail:tb.detail||''}; if(tb.rule==='draw') st.tieStart=tb.rest; }
+    else st.nextStarter=tied.length?tied[0]:0;
+  }
+  st.finalTie=null;
+  if(st.players.some(p=>p.total>(st.limit||100))){
+    st.phase='over';
+    const bt=Math.min(...act.map(k=>st.players[k].total||0)); const w=act.filter(k=>(st.players[k].total||0)===bt);
+    if(w.length>1){ const tb=tieBreak(st,w); let fd=null; if(tb.rule==='draw'){ const dl=drawLots(tb.rest); tb.winner=dl.winner; fd={cards:Object.fromEntries(Object.entries(dl.cards).map(([k,c])=>[st.players[+k].name,c]))}; }
+      st.finalTie={names:w.map(k=>st.players[k].name),winner:st.players[tb.winner].name,rule:tb.rule,pts:bt,detail:tb.detail||'',draw:fd}; }
+  }
 }
 function checkEmpty(st,k){
   if(st.phase==='play' && st.caller===null && count(st.players[k])===0){
     st.caller=k; log(st,`${st.players[k].name} n’a plus de carte : TamTam automatique`);
-    if(st.mode!=='ultime' || st.turn===k) endRound(st);
+    if(st.mode!=='ultime' || st.turn===k) startClosing(st,'empty');
   }
 }
 function needTurn(st,steps){
   const i=mi(st);
   if(i<0) return {err:'Vous ne jouez pas dans cette partie.'};
   if(st.phase!=='play') return {err:'La manche n’est pas en cours.'};
+  if(st.closing) return {err:'Fin de manche : seuls les collages sont possibles.'};
   if(st.turn!==i) return {err:'Ce n’est pas votre tour.'};
   if(steps && !steps.includes(st.step)) return {err:'Action impossible à ce moment.'};
   return {i,p:st.players[i]};
@@ -445,14 +512,14 @@ const A={
     st.players.splice(i,1);
     const fix=k=>k==null?null:(k>i?k-1:(k===i?null:k));
     st.turn = st.turn>i ? st.turn-1 : (st.turn===i ? (st.players.length? st.turn%st.players.length : 0) : st.turn);
-    st.caller=fix(st.caller); st.nextStarter=fix(st.nextStarter); if(st.tieStart){ st.tieStart=st.tieStart.map(fix).filter(k=>k!=null); if(st.tieStart.length<2) st.tieStart=null; }
+    st.caller=fix(st.caller); st.nextStarter=fix(st.nextStarter); st.surpriseKnown=fix(st.surpriseKnown); if(st.tieStart){ st.tieStart=st.tieStart.map(fix).filter(k=>k!=null); if(st.tieStart.length<2) st.tieStart=null; }
     st.gives=(st.gives||[]).filter(g=>g.from!==i&&g.to!==i).map(g=>({from:fix(g.from),to:fix(g.to),s:g.s}));
     if(st.nineLook&&(st.nineLook.p===i)) st.nineLook=null; else if(st.nineLook) st.nineLook.p=fix(st.nineLook.p);
     if(st.draw){ st.draw.cards.splice(i,1); st.draw.winner=fix(st.draw.winner); }
     if(st.host===p.id && st.players.length){ const h=st.players.find(q=>!q.bot)||st.players[0]; st.host=h.id; }
     if(st.players.length && st.players[st.turn] && st.players[st.turn].waiting){ const n=st.players.length; for(let g=1;g<=n;g++){ const t=(st.turn+g)%n; if(!st.players[t].waiting){ st.turn=t; break; } } }
     if(st.players.filter(q=>!q.waiting).length<2){
-      if(st.phase==='play'){ st.caller=null; endRound(st); }
+      if(st.phase==='play'){ st.caller=null; st.closing=null; endRound(st); }
       else if(st.phase==='peek'){ st.phase='lobby'; st.players.forEach(q=>{q.slots=[];}); }
     } else if(st.phase==='peek' && st.players.every(q=>q.ready)){ st.phase='play'; }
   },
@@ -476,6 +543,7 @@ const A={
     const t=needTurn(st,['start']); if(t.err) return t.err;
     const c=drawCard(st); if(!c) return 'Plus aucune carte à piocher.';
     st.held=c; st.heldFrom='deck'; st.step='drawn';
+    if(c.id===st.surpriseId) st.surpriseKnown=t.i;
   },
   take(st){
     const t=needTurn(st,['start']); if(t.err) return t.err;
@@ -491,12 +559,13 @@ const A={
       t.p.slots[s]=st.held; log(st,`${t.p.name} repose une carte`); endTurn(st); return;
     }
     t.p.slots[s]=st.held; st.discard.push(old); st.collageDone=false; if(t.p.bot) t.p.bot.known[s]=st.held.id;
+    loseSurprise(st,old); t.p.swaps=(t.p.swaps||0)+1;
     log(st,`${t.p.name} échange une carte et défausse ${cname(old)}`);
     endTurn(st);
   },
   discardHeld(st){
     const t=needTurn(st,['drawn']); if(t.err) return t.err;
-    const c=st.held; st.discard.push(c); st.held=null; st.heldFrom=null; st.collageDone=false;
+    const c=st.held; st.discard.push(c); st.held=null; st.heldFrom=null; st.collageDone=false; loseSurprise(st,c);
     log(st,`${t.p.name} défausse ${cname(c)}`);
     const pw=powerAvail(st,c,t.i);
     if(pw){ st.step='power'; st.power=pw; } else endTurn(st);
@@ -509,6 +578,7 @@ const A={
     if(!st.players[p]||!st.players[p].slots[s]) return 'Cette carte n’existe plus.';
     log(st, kind==='own'?`${t.p.name} regarde une de ses cartes`:`${t.p.name} regarde une carte de ${st.players[p].name}`);
     if(t.p.bot&&kind==='own') t.p.bot.known[s]=st.players[p].slots[s].id;
+    if(kind==='own'&&st.players[p].slots[s].id===st.surpriseId) st.surpriseKnown=t.i;
     st.fx={ids:[st.players[p].slots[s].id],seq:(st.seq||0)+1};
     endTurn(st);
   },
@@ -518,6 +588,7 @@ const A={
     const o=st.players[p]; if(!o||p===t.i||!o.slots[u]) return 'Carte non valide.';
     if(!t.p.slots[s]) return 'Cette carte n’existe plus.';
     st.nineLook={s,p,u,ids:[t.p.slots[s].id,o.slots[u].id]}; st.fx={ids:st.nineLook.ids,seq:(st.seq||0)+1};
+    if(t.p.slots[s].id===st.surpriseId) st.surpriseKnown=t.i;
     log(st,`${t.p.name} regarde une de ses cartes et une carte de ${o.name}`);
   },
   nine(st){
@@ -526,7 +597,9 @@ const A={
     const {s,p,u,ids}=st.nineLook, o=st.players[p];
     const a=t.p.slots[s], b=o&&o.slots[u];
     if(!a||!b||a.id!==ids[0]||b.id!==ids[1]){ log(st,`Échange impossible : une des cartes a été collée`); endTurn(st); return; }
-    [t.p.slots[s],o.slots[u]]=[o.slots[u],t.p.slots[s]]; if(t.p.bot) t.p.bot.known[s]=t.p.slots[s].id; log(st,`${t.p.name} échange sa carte avec celle de ${o.name}`);
+    [t.p.slots[s],o.slots[u]]=[o.slots[u],t.p.slots[s]]; if(t.p.bot) t.p.bot.known[s]=t.p.slots[s].id; t.p.swaps=(t.p.swaps||0)+1;
+    if(t.p.slots[s].id===st.surpriseId) st.surpriseKnown=t.i;
+    log(st,`${t.p.name} échange sa carte avec celle de ${o.name}`);
     endTurn(st);
   },
   ten(st,{p,u,q,v}){
@@ -546,8 +619,23 @@ const A={
   tamalou(st){
     const t=needTurn(st,['start']); if(t.err) return t.err;
     if(st.caller!==null) return 'TamTam a déjà été annoncé.';
-    st.caller=t.i; log(st,`${t.p.name} annonce TamTam !`);
-    if(st.mode==='ultime'){ endTurn(st); } else endRound(st);
+    st.caller=t.i;
+    if(st.mode==='ultime'){ log(st,`${t.p.name} annonce TamTam !`); endTurn(st); } else startClosing(st,'tamtam');
+  },
+  closeRound(st){
+    if(st.phase!=='play'||!st.closing) return '';
+    if(Date.now()<st.closing.until-250) return '';
+    (st.gives||[]).forEach(g=>{ const me=st.players[g.from], to=st.players[g.to]; if(!me||!to) return; const s=me.slots.findIndex(Boolean); if(s<0) return; const c=me.slots[s]; me.slots[s]=null; if(to.slots[g.s]==null) to.slots[g.s]=c; else to.slots.push(c); log(st,`${me.name} donne une carte à ${to.name}`); });
+    st.gives=[]; st.closing=null; endRound(st);
+  },
+  surprise(st,{s,p,u}){
+    const t=needTurn(st,['start']); if(t.err) return t.err;
+    if(!canSurprise(st,t.i)) return 'Vous n’avez pas la carte Surprise.';
+    const o=st.players[p]; if(!o||p===t.i||o.waiting||!o.slots[u]||!t.p.slots[s]) return 'Carte non valide.';
+    [t.p.slots[s],o.slots[u]]=[o.slots[u],t.p.slots[s]];
+    if(t.p.bot) delete t.p.bot.known[s]; if(o.bot) delete o.bot.known[u];
+    t.p.swaps=(t.p.swaps||0)+1;
+    st.surpriseId=null; st.surpriseKnown=null; st.silent=true;
   },
   setMode(st,{mode}){
     if(st.host!==ME) return 'Seul l’hôte choisit le mode.';
@@ -571,7 +659,7 @@ const A={
     if(!c) return 'Trop tard : cette carte est déjà partie.';
     if(ult && st.collageDone && c.r===rank) return 'Trop tard : une seule carte collée par défausse en mode Ultime.';
     if(c.r===rank){
-      o.slots[s]=null; st.discard.push(c); st.collageDone=true;
+      o.slots[s]=null; st.discard.push(c); st.collageDone=true; loseSurprise(st,c);
       if(p===i) log(st,`${me.name} colle ${cname(c)}`);
       else { log(st,`${me.name} colle ${cname(c)} de ${o.name}`); if(count(me)>0) st.gives.push({from:i,to:p,s}); }
       checkEmpty(st,p);
@@ -590,9 +678,9 @@ const A={
     checkEmpty(st,i);
   },
   skipTurn(st){
-    if(st.host!==ME||st.phase!=='play') return;
+    if(st.host!==ME||st.phase!=='play'||st.closing) return;
     const p=st.players[st.turn];
-    if(st.held){ st.discard.push(st.held); st.collageDone=false; }
+    if(st.held){ loseSurprise(st,st.held); st.discard.push(st.held); st.collageDone=false; }
     log(st, st.mode==='ultime'?`Temps écoulé : le tour de ${p.name} est passé`:`L’hôte passe le tour de ${p.name}`); endTurn(st);
   }
 };
@@ -608,9 +696,9 @@ async function mutate(fn,actor){
     let row; try{ row=await fetchGame(CODE); }catch(e){ toast('Connexion instable, réessayez.'); return; }
     if(!row){ toast('Cette partie n’existe plus.'); return; }
     const st=JSON.parse(JSON.stringify(row.state));
-    const who=actor||ME; ACTOR=who; const l0=(st.log||[])[0]; let res; try{ res=fn(st); } finally{ ACTOR=ME; }
+    const who=actor||ME; ACTOR=who; const l0=(st.log||[])[0]; st.silent=false; let res; try{ res=fn(st); } finally{ ACTOR=ME; }
     if(typeof res!=='string'&&(st.log||[])[0]!==l0) st.lastBy=st.players.findIndex(p=>p.id===who);
-    if(typeof res==='string'){ toast(res); return; }
+    if(typeof res==='string'){ if(res) toast(res); return; }
     st.seq=(st.seq||0)+1;
     const {data,error}=await SB.from(TABLE).update({state:st,version:row.version+1,updated_at:new Date().toISOString()}).eq('code',CODE).eq('version',row.version).select('version');
     if(error){ toast('Connexion instable, réessayez.'); return; }
@@ -703,7 +791,11 @@ function interaction(st){
   const i=mi(st); if(i<0||!st) return null;
   const has=(p,s)=>!!(st.players[p]&&st.players[p].slots[s]);
   if((st.gives||[]).some(g=>g.from===i)) return {kind:'give',pred:(p,s)=>p===i&&has(p,s)};
-  if(st.phase!=='play'||st.turn!==i) return null;
+  if(st.phase!=='play'||st.turn!==i||st.closing) return null;
+  if(st.step==='start'&&ui.surp&&canSurprise(st,i)){
+    if(ui.surpS==null) return {kind:'surp1',pred:(p,s)=>p===i&&has(p,s)};
+    return {kind:'surp2',pred:(p,s)=>p!==i&&!st.players[p].waiting&&has(p,s)};
+  }
   if(st.step==='drawn'||st.step==='fromDiscard'){
     const none=count(st.players[i])===0;
     return {kind:'swap',pred:(p,s)=>p===i&&(has(p,s)||(none&&s<st.players[i].slots.length))};
@@ -733,7 +825,8 @@ function slotHTML(st,p,s,size,it){
   const seen=(up&&((ui.reveal&&ui.reveal.ids.includes(c.id))||(st.nineLook&&st.nineLook.ids.includes(c.id)&&st.turn===mi(st))))?' seen':'';
   const tappable=pick||canColler(st);
   const cls=`slot ${size}${pick?' pick':''}${sel}${seen}${ui.dealt&&ui.dealt.has(p+':'+s)?' dealt':''}`;
-  const inner=up?face(c):'<span class="back"></span>';
+  const sm=(p===mi(st)&&st.surpriseId!=null&&c.id===st.surpriseId&&st.surpriseKnown===mi(st))?'<span class="surpmark" title="Carte Surprise">✨</span>':'';
+  const inner=(up?face(c):'<span class="back"></span>')+sm;
   return tappable?`<button class="${cls}" data-cid="${c.id}" data-p="${p}" data-s="${s}" aria-label="Carte ${s+1} de ${esc(st.players[p].name)}">${inner}</button>`:`<span class="${cls}" data-cid="${c.id}" data-p="${p}" data-s="${s}">${inner}</span>`;
 }
 function rulesHTML(){
@@ -748,7 +841,10 @@ function rulesHTML(){
   <tr><td>8</td><td>Regardez la carte d’un autre joueur.</td></tr>
   <tr><td>9</td><td>Regardez une de vos cartes et une carte adverse. Une fois vues, l’échange est obligatoire.</td></tr>
   <tr><td>10</td><td>À 3 joueurs ou plus : échangez sans les voir deux cartes de deux autres joueurs.</td></tr>
+  <tr><td>✨</td><td>Carte Surprise : à chaque manche, une carte au hasard porte une étoile que seul son détenteur voit. Au début de son tour, il peut échanger en secret une de ses cartes avec celle d’un adversaire : aucune animation, personne n’est prévenu. Si la carte est défaussée ou collée, la surprise est perdue pour la manche.</td></tr>
   </table>
+  <p class="note">Fin de manche : quand quelqu’un annonce TamTam ou n’a plus de carte, un compte à rebours de 5 secondes laisse à tous une dernière chance de coller avant le décompte des points.</p>
+  <p class="note">Égalité de points : on départage par le nombre de cartes en main (le moins), puis l’absence de Joker, puis le nombre d’échanges de cartes dans la manche (le moins), puis un tirage de carte. Pas de départage pour l’annonceur du TamTam (il perd l’égalité) ni pour un joueur sans carte (il gagne). Pendant la partie, le joueur en tête porte une couronne et le dernier une tête d’âne.</p>
   <p class="note">Coller : posez sur la défausse une carte de même valeur, à tout moment, tant que cette carte reste visible. Une erreur coûte une carte de pénalité. En mode Classique, on ne colle que ses propres cartes et plusieurs joueurs peuvent coller à la suite.</p><p class="note">Mode Ultime ⚡ : une seule carte collée par défausse (le second arrivé n’est pas pénalisé s’il avait la bonne carte), on peut coller la carte d’un adversaire et lui donner une des siennes en échange, 20 secondes par tour, et après un TamTam chacun joue un dernier tour pendant lequel l’annonceur peut être attaqué.</p>
   <p class="note">TamTam : annoncé en début de tour. En Classique, la manche s’arrête immédiatement ; en Ultime, les autres jouent un dernier tour. Si l’annonceur a strictement le plus petit total, il marque 0 et les autres marquent leurs cartes. Sinon, il prend la somme des cartes de tous les autres, qui marquent 0. Un joueur qui n’a plus aucune carte gagne toujours la manche (0 point), même si un autre a un total négatif. La partie s’arrête quand quelqu’un dépasse le total fixé au départ (100 par défaut).</p>
   </div>`;
@@ -805,12 +901,14 @@ function renderTable(){
   const order=[]; for(let k=1;k<=n;k++){ const idx=((i<0?0:i)+k)%n; if(idx!==i) order.push(idx); }
   if(i<0){ order.length=0; for(let k=0;k<n;k++) order.push(k); }
   const tp=top(st), me=i>=0?st.players[i]:null, cur=st.players[st.turn];
-  const myTurn=st.phase==='play'&&st.turn===i;
+  const closing=st.phase==='play'&&!!st.closing;
+  const myTurn=st.phase==='play'&&st.turn===i&&!closing;
   const sr=ui.starter&&ui.starter.round===st.round&&ui.starter.until>Date.now()?ui.starter:null;
+  const RB=rankBadges(st);
   const seatHTML=(k,sc,pos)=>{ const p=st.players[k]; const nb=count(p);
     const sub=p.waiting?'prochaine manche':st.phase==='peek'?(p.ready?'prêt':'mémorise…'):`<span class="nbc">${nb} carte${nb>1?'s':''} · </span>${p.total||0} pts`;
-    return `<div class="seat${sc?' '+sc:''}${sr&&sr.k===k?' starter':''}${st.turn===k&&st.phase==='play'?' turn':''}" style="--x:${pos[0]}%;--y:${pos[1]}%;--lx:${pos[2]}%;--ly:${pos[3]}%">
-    <div class="head"><span class="av">${p.bot?'🤖':esc(p.name.slice(0,1).toUpperCase())}</span><span class="nm">${esc(p.name)}</span></div>
+    return `<div class="seat${sc?' '+sc:''}${sr&&sr.k===k?' starter':''}${st.turn===k&&st.phase==='play'&&!closing?' turn':''}" style="--x:${pos[0]}%;--y:${pos[1]}%;--lx:${pos[2]}%;--ly:${pos[3]}%">
+    <div class="head"><span class="av">${p.bot?'🤖':esc(p.name.slice(0,1).toUpperCase())}</span><span class="nm">${esc(p.name)}</span>${badgeHTML(RB[k])}</div>
     <div class="sub">${sub}${st.caller===k?'<span class="tag">TamTam</span>':''}</div>
     ${p.waiting?'':`<div class="cards">${p.slots.length>4?`<div class="extra side">${p.slots.map((_,s)=>s).filter(s=>s>=4).reverse().map(s=>slotHTML(st,k,s,'mini',it)).join('')}</div>`:''}<div class="grid">${[3,2,1,0].filter(s=>s<p.slots.length).map(s=>slotHTML(st,k,s,'mini',it)).join('')}</div></div>`}
     ${st.lastBy===k&&st.log&&st.log[0]?`<div class="act">${esc(st.log[0].t)}</div>`:''}</div>`; };
@@ -826,15 +924,20 @@ function renderTable(){
   let heldHTML='';
   if(st.held){
     const up=myTurn||st.heldFrom==='discard';
-    heldHTML=`<div class="pile"><span class="slot mid held" data-cid="${st.held.id}">${up?face(st.held):'<span class="back"></span>'}</span><span class="lbl">${myTurn?'<b>Votre carte</b>':'En main : '+esc(cur.name)}</span></div>`;
+    const smark=(myTurn&&st.held.id===st.surpriseId)?'<span class="surpmark" title="Carte Surprise">✨</span>':'';
+    heldHTML=`<div class="pile"><span class="slot mid held" data-cid="${st.held.id}">${up?face(st.held):'<span class="back"></span>'}${smark}</span><span class="lbl">${myTurn?'<b>Votre carte</b>':'En main : '+esc(cur.name)}</span></div>`;
   }
   // status, chips, banner
   let status='', chips='', banner='';
   const give=(st.gives||[]).find(g=>g.from===i);
   if(give) banner=`<div class="banner give">Touchez une de vos cartes : elle ira à ${esc(st.players[give.to].name)}.</div>`;
-  if(st.caller!==null&&st.phase==='play') banner+=`<div class="banner">${esc(st.players[st.caller].name)} a annoncé TamTam : dernier tour, attaquez-le !</div>`;
+  if(closing){ const who=st.caller!=null?esc(st.players[st.caller].name):''; const why=st.closing.reason==='tamtam'?`${who} a annoncé TamTam !`:st.closing.reason==='empty'?`${who} n’a plus de carte !`:'Dernier tour terminé !'; banner+=`<div class="banner close"><span class="closetimer">${Math.max(0,Math.ceil((st.closing.until-Date.now())/1000))}</span>${why} Dernière chance de coller…</div>`; }
+  else if(st.caller!==null&&st.phase==='play') banner+=`<div class="banner">${esc(st.players[st.caller].name)} a annoncé TamTam : dernier tour, attaquez-le !</div>`;
   const collerHint=canColler(st)&&tp?` <span class="dim">Touchez une carte pour la coller sur ${cname(tp)}.</span>`:'';
-  if(st.phase==='peek'){
+  const mySurprise=i>=0&&canSurprise(st,i);
+  if(closing){
+    status=(i>=0&&!me.waiting)?`Les cartes vont être comptées.${collerHint||' Plus rien à coller ?'}`:'Les cartes vont être comptées.';
+  } else if(st.phase==='peek'){
     if(i<0) status='Les joueurs mémorisent leurs cartes.';
     else if(me.waiting) status=`Vous rejoindrez la partie à la prochaine manche.`;
     else if(!me.ready){ status='Mémorisez vos <b>deux cartes du bas</b>.'; chips=`<button class="chip main" data-a="ready">C’est mémorisé</button>`; }
@@ -846,11 +949,13 @@ function renderTable(){
     status=`Vous regardez la partie. Au tour de <b>${esc(cur.name)}</b>.`;
   } else if(myTurn){
     if(st.step==='start'){
-      status='<b>À vous.</b> Touchez la pioche ou la défausse.'+collerHint;
-      chips=st.caller===null?`<button class="chip call" data-a="tamalou">TamTam !</button>`:'';
+      if(ui.surp){ status=ui.surpS==null?'✨ Touchez <b>une de vos cartes</b> à échanger en secret…':'…puis <b>la carte d’un adversaire</b>. Personne ne verra rien 🤫'; chips=`<button class="chip" data-a="surp">Annuler</button>`; }
+      else { status='<b>À vous.</b> Touchez la pioche ou la défausse.'+collerHint;
+        chips=(mySurprise?`<button class="chip surp" data-a="surp">✨ Surprise</button>`:'')+(st.caller===null?`<button class="chip call" data-a="tamalou">TamTam !</button>`:''); }
     } else if(st.step==='drawn'){
       const pw=powerAvail(st,st.held,i);
       status=`Touchez <b>une de vos cartes</b> pour la remplacer par ${cname(st.held)}, ou <b>la défausse</b> pour le défausser${pw?` et pouvoir ${POWER_TXT[pw]}`:''}.`;
+      if(st.held.id===st.surpriseId) status+=' <b>✨ C’est la carte Surprise !</b> Gardez-la : vous pourrez échanger une carte en secret au prochain tour. Chut 🤫';
     } else if(st.step==='fromDiscard'){
       status=`Touchez <b>la carte à remplacer</b> par ${cname(st.held)}.`;
     } else if(st.step==='power'){
@@ -869,11 +974,12 @@ function renderTable(){
     const what=st.step==='drawn'?' a pioché une carte':st.step==='fromDiscard'?` a pris ${cname(st.held)}`:st.step==='power'?` utilise le pouvoir du ${ {own:'7',opp:'8',nine:'9',ten:'10'}[st.power] }`:' joue';
     status=`<b>${esc(cur.name)}</b>${what}.`+collerHint;
   }
-  const hostbar=(st.host===ME && st.phase==='play' && st.turn!==i)?`<button class="link" data-a="skipTurn">Passer le tour de ${esc(cur.name)}</button>`:'';
+  const hostbar=(st.host===ME && st.phase==='play' && st.turn!==i && !closing)?`<button class="link" data-a="skipTurn">Passer le tour de ${esc(cur.name)}</button>`:'';
+  const secret=(i>=0&&!me.waiting&&st.phase!=='reveal'&&canSurprise(st,i)&&!myTurn)?`<div class="secret">✨ Vous tenez la carte Surprise. Au début de votre tour, échangez en secret une de vos cartes avec celle d’un adversaire. Chut, ne dites rien 🤫</div>`:'';
   const mine=me?`<div class="hand${myTurn?' myturn':''}${sr&&sr.k===i?' starter':''}">
       ${me.waiting?'<p class="note">Vous jouerez dès la prochaine manche. Regardez la partie en attendant.</p>':`<div class="cards"><div class="grid">${me.slots.slice(0,4).map((_,s)=>slotHTML(st,i,s,'big',it)).join('')}</div>${me.slots.length>4?`<div class="extra side">${me.slots.map((_,s)=>s>=4?slotHTML(st,i,s,'big',it):'').join('')}</div>`:''}</div>`}
-      <div class="who">${esc(me.name)} · ${me.total||0} pts</div></div>`:'';
-  const scoresHTML=!ui.board?'':`<aside class="board"><div class="bh">Points <span>/ ${st.limit}</span><button class="link x" data-a="board" aria-label="Fermer">✕</button></div><table>${st.players.map((p,k)=>({p,k})).sort((a,b)=>(a.p.total||0)-(b.p.total||0)).map(({p,k},r)=>`<tr class="${[k===i?'me':'',st.phase==='play'&&st.turn===k?'turn':'',r===0?'lead':''].join(' ').trim()}"><td class="r">${r+1}</td><td class="n">${esc(p.name)}${p.bot?' <small>🤖</small>':''}${p.waiting?' <small>⏳</small>':''}</td><td class="p${(p.total||0)>=0.8*st.limit?' warn':''}">${p.total||0}</td></tr>`).join('')}</table></aside>`;
+      <div class="who">${esc(me.name)} · ${me.total||0} pts${badgeHTML(RB[i])}</div>${secret}</div>`:'';
+  const scoresHTML=!ui.board?'':`<aside class="board"><div class="bh">Points <span>/ ${st.limit}</span><button class="link x" data-a="board" aria-label="Fermer">✕</button></div><table>${st.players.map((p,k)=>({p,k})).sort((a,b)=>(a.p.total||0)-(b.p.total||0)).map(({p,k},r)=>`<tr class="${[k===i?'me':'',st.phase==='play'&&st.turn===k?'turn':'',r===0?'lead':''].join(' ').trim()}"><td class="r">${r+1}</td><td class="n">${esc(p.name)}${p.bot?' <small>🤖</small>':''}${p.waiting?' <small>⏳</small>':''}${badgeHTML(RB[k])}</td><td class="p${(p.total||0)>=0.8*st.limit?' warn':''}">${p.total||0}</td></tr>`).join('')}</table></aside>`;
   const last=(st.log||[])[0];
   const sbanner=sr?`<div class="startbanner">🎯 ${sr.k===i?'<b>Vous</b> commencez':`<b>${esc(st.players[sr.k].name)}</b> commence`}${st.round>1&&sr.k!==i?`<small>${st.draw&&st.draw.tie?'vainqueur du tirage':'gagnant de la manche précédente'}</small>`:''}</div>`:'';
   app.innerHTML=`<div class="screen${ui.dealing?' dealing':''}">
@@ -904,10 +1010,11 @@ function renderScores(){
   const st=G, over=st.phase==='over';
   const order=showOrder(st), c=st.caller;
   const ranked=st.players.map((p,k)=>({p,k})).sort((x,y)=>x.p.total-y.p.total); const best=ranked[0].p.total;
-  const winners=ranked.filter(r=>r.p.total===best).map(r=>r.p.name);
+  const ft=st.finalTie; const winners=over&&ft?[ft.winner]:ranked.filter(r=>r.p.total===best).map(r=>r.p.name);
+  const RB=rankBadges(st);
   const rows=order.map(k=>{ const p=st.players[k]; const cards=p.slots.filter(Boolean);
     return `<div class="srow show" data-k="${k}">
-      <div class="nm">${esc(p.name)}${c===k?'<span class="tag">TamTam</span>':''}${st.nextStarter===k&&!over?'<span class="tag go hidden">commence</span>':''}</div>
+      <div class="nm">${esc(p.name)}${badgeHTML(RB[k])}${c===k?'<span class="tag">TamTam</span>':''}${st.nextStarter===k&&!over?'<span class="tag go hidden">commence</span>':''}</div>
       <div class="cards">${cards.length?cards.map(cd=>`<span class="slot mid down" data-cid="${cd.id}" data-val="${val(cd)}"><span class="back"></span>${face(cd)}</span>`).join(''):'<span class="det">Aucune carte</span>'}</div>
       <div class="nums"><span class="lbl2">main</span><span class="num hand">0</span><span class="num plus hidden">+${p.last}</span><span class="eq hidden">→</span><span class="num tot hidden" data-from="${(p.total||0)-(p.last||0)}" data-to="${p.total||0}">${(p.total||0)-(p.last||0)}</span></div>
     </div>`; }).join('');
@@ -916,9 +1023,11 @@ function renderScores(){
   <div class="panel" style="text-align:center;padding:12px">
     <h2>${over?`Fin de partie : ${esc(winners.join(' et '))} ${winners.length>1?'gagnent':'gagne'}`:`Fin de la manche ${st.round}`}</h2>
     <p class="note">${c!=null?`<b>${esc(st.players[c].name)}</b> a annoncé TamTam. Qui a le plus petit total ?`:'Dévoilement des cartes'}</p>
+    ${over&&ft?`<p class="note tiefinal">Égalité à <b>${ft.pts}</b> points entre ${esc(ft.names.join(' et '))} : <b>${esc(ft.winner)}</b> l’emporte (${TIE_RULES[ft.rule]}${ft.detail?' · '+esc(ft.detail):''}).${ft.draw?' '+Object.entries(ft.draw.cards).map(([n,cd])=>esc(n)+' '+cname(cd)).join(' · '):''}</p>`:''}
   </div>
   <div class="score">${rows}</div>
   <div class="verdict hidden"></div>
+  ${!over&&st.tieInfo?`<div class="tiebreak hidden">Égalité à <b>${st.tieInfo.pts}</b> pts entre ${esc(st.tieInfo.names.join(' et '))} : ${st.tieInfo.rule==='draw'?`<b>tirage au sort</b> au début de la prochaine manche`:`<b>${esc(st.tieInfo.winner)}</b> commence (${TIE_RULES[st.tieInfo.rule]}${st.tieInfo.detail?' · '+esc(st.tieInfo.detail):''})`}</div>`:''}
   <div class="after hidden">${st.host===ME?`<button class="btn main wide" data-a="start">${over?'Nouvelle partie':'Manche suivante'}</button>${st.players.length<6?`<button class="link" data-a="addBot">+ Ajouter un joueur machine</button>`:''}`:`<p class="note" style="text-align:center">L’hôte lance la suite.</p>`}</div>
   <div class="chips"><button class="chip" data-a="skipShow">Passer l’animation</button></div>
   </div>`;
@@ -953,7 +1062,7 @@ function runShowdown(st){
   });
   t+=900;
   // round scores + totals
-  at(t,()=>{ root.querySelectorAll('.srow .plus, .srow .eq, .srow .tot, .tag.go').forEach(e=>e.classList.remove('hidden')); countUp(root); });
+  at(t,()=>{ root.querySelectorAll('.srow .plus, .srow .eq, .srow .tot, .tag.go, .tiebreak').forEach(e=>e.classList.remove('hidden')); countUp(root); });
   t+=1500;
   at(t,()=>finishShowdown(true));
 }
@@ -998,18 +1107,20 @@ function botTick(){
     Object.entries(botKnown(st,b)).forEach(([s,c])=>{ if(c.r!==tp.r) return; const key=p.id+':'+c.id+':'+tp.id; if(botTried.has(key)) return; botTried.add(key);
       setTimeout(()=>{ const g=G; if(!g||g.phase!=='play') return; const t2=top(g); if(!t2||t2.r!==tp.r) return; const q=g.players.find(x=>x.id===p.id); if(!q) return; const bi=g.players.indexOf(q); if(q.slots[+s]&&q.slots[+s].id===c.id) actAs(p.id,'coller',{p:bi,s:+s,rank:tp.r}); },pace(PACE.coller)); });
   });
+  if(st.closing) return;
   const cur=st.players[st.turn];
   if(cur&&cur.bot){ const seq=st.seq; botTimer=setTimeout(()=>{ if(G&&G.seq===seq) botTurn(st.turn); },pace(PACE.botStep)); }
 }
 function botTurn(b){
-  const st=G, p=st.players[b]; if(!p||!p.bot||st.phase!=='play'||st.turn!==b) return;
+  const st=G, p=st.players[b]; if(!p||!p.bot||st.phase!=='play'||st.turn!==b||st.closing) return;
   const known=botKnown(st,b), slots=p.slots, tp=top(st);
   const unknown=slots.map((c,s)=>c&&known[s]==null?s:-1).filter(s=>s>=0);
   const ks=Object.entries(known).sort((x,y)=>val(y[1])-val(x[1]));
   const worst=ks[0]; const knownSum=ks.reduce((a,[,c])=>a+val(c),0);
   const anySlot=slots.findIndex(c=>c);
   if(st.step==='start'){
-    if(unknown.length===0 && count(p)>0 && (knownSum<=6 || (knownSum<=10&&Math.random()<.35))) return actAs(p.id,'tamalou');
+    if(canSurprise(st,b) && worst && val(worst[1])>=7){ const tg=rnd(oppCards(st,b)); if(tg) return actAs(p.id,'surprise',{s:+worst[0],p:tg.p,u:tg.u}); }
+    if(st.caller===null && unknown.length===0 && count(p)>0 && (knownSum<=6 || (knownSum<=10&&Math.random()<.35))) return actAs(p.id,'tamalou');
     if(tp&&count(p)>0){ const tv=val(tp);
       if(worst && tv<=5 && tv<val(worst[1])-1){ botPlan[p.id]=+worst[0]; return actAs(p.id,'take'); }
       if(tv<=2 && unknown.length){ botPlan[p.id]=unknown[0]; return actAs(p.id,'take'); } }
@@ -1073,8 +1184,16 @@ function emojiRain(list,n){
 }
 /* ---------- Ultimate mode: 20 seconds per turn ---------- */
 const TURN_MS=20000; let lastAutoSkip=-1;
+let lastCloseSec=-1, lastCloseTry=0;
 setInterval(()=>{
-  if(!G||!CODE||G.phase!=='play'||G.mode!=='ultime'||!G.turnStart) return;
+  if(!G||!CODE||G.phase!=='play'||!G.closing){ lastCloseSec=-1; return; }
+  const left=(G.closing.until-Date.now())/1000, sec=Math.max(0,Math.ceil(left));
+  document.querySelectorAll('.closetimer').forEach(el=>{ el.textContent=sec; });
+  if(sec!==lastCloseSec){ lastCloseSec=sec; if(sec>0) SFX.beep(sec); else SFX.buzz(); }
+  if(left<=0 && Date.now()-lastCloseTry>1200 && (G.host===ME || left<-1.5)){ lastCloseTry=Date.now(); act('closeRound'); }
+},200);
+setInterval(()=>{
+  if(!G||!CODE||G.phase!=='play'||G.mode!=='ultime'||!G.turnStart||G.closing) return;
   const left=Math.max(0,Math.ceil((G.turnStart+TURN_MS-Date.now())/1000));
   const el=document.querySelector('.timer'); if(el){ el.textContent=`⏱ ${left}s`; el.classList.toggle('hurry',left<=5); }
   if(left===0 && G.host===ME && lastAutoSkip!==G.seq){ lastAutoSkip=G.seq; const cur=G.players[G.turn]; if(cur&&!cur.bot) act('skipTurn'); }
@@ -1091,7 +1210,9 @@ const SFX={
   win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.28,'triangle',.13,i*.11)),
   lose:()=>{ tone(320,.35,'sawtooth',.1,0,190); tone(230,.55,'sawtooth',.09,.3,120); },
   tam:()=>{ tone(660,.1,'square',.08); tone(880,.16,'square',.08,.1); },
-  sms:()=>{ tone(1175,.09,'sine',.12); tone(1568,.14,'sine',.12,.1); }
+  sms:()=>{ tone(1175,.09,'sine',.12); tone(1568,.14,'sine',.12,.1); },
+  beep:(n)=>tone(n<=2?1320:880,.12,'square',.09),
+  buzz:()=>{ tone(220,.4,'sawtooth',.12,0,160); tone(165,.5,'sawtooth',.1,.25,110); }
 };
 document.addEventListener('pointerdown',()=>{ if(!muted) ac(); },{passive:true});
 
@@ -1153,6 +1274,8 @@ function onSlot(p,s){
       case 'nine2': { const own=ui.sel; ui.sel=null; act('nineLook',{s:own,p,u:s}); return; }
       case 'ten1': ui.pick={p,u:s}; render(); return;
       case 'ten2': { const k=ui.pick; ui.pick=null; act('ten',{p:k.p,u:k.u,q:p,v:s}); return; }
+      case 'surp1': ui.surpS=s; render(); return;
+      case 'surp2': { const s0=ui.surpS; ui.surp=false; ui.surpS=null; act('surprise',{s:s0,p,u:s}); return; }
     }
   }
   const i=mi(st);
@@ -1172,6 +1295,7 @@ app.addEventListener('click',e=>{
   if(a==='quit'){ if(G&&G.phase==='lobby') act('leave').then(()=>closeGame()); else closeGame(); return; }
   if(a==='rules'){ ui.rules=!ui.rules; render(); return; }
   if(a==='board'){ ui.board=!ui.board; render(); return; }
+  if(a==='surp'){ ui.surp=!ui.surp; ui.surpS=null; render(); return; }
   if(a==='limit'){ act('setLimit',{limit:+b.dataset.v}); return; }
   if(a==='mode'){ act('setMode',{mode:b.dataset.v}); return; }
   if(a==='chat'){ ui.chatOpen=!ui.chatOpen; renderSheet(); return; }
@@ -1230,15 +1354,15 @@ render=function(){
   if(G&&CODE&&(G.phase==='reveal'||G.phase==='over')){ const sd=document.querySelector('.showdown'); if(sd&&sd.dataset.seq===String(G.seq)){ const mb=sd.querySelector('[data-a="mute"]'); if(mb) mb.textContent=muted?'🔇':'🔊'; return; } }
   const changed=!!(G&&CODE&&booted&&G.seq!==lastSeq);
   const before=changed&&lastSeq>=0&&document.querySelector('.screen')?cardRects():null;
-  if(G){ const key=G.round+':'+G.turn+':'+G.step; if(key!==lastTurnKey){ if(G.step!=='power'){ ui.sel=null; ui.pick=null; if(ui.reveal&&ui.reveal.until>Date.now()+1e7) ui.reveal=null; } lastTurnKey=key; } }
+  if(G){ const key=G.round+':'+G.turn+':'+G.step; if(key!==lastTurnKey){ if(G.step!=='power'){ ui.sel=null; ui.pick=null; if(ui.reveal&&ui.reveal.until>Date.now()+1e7) ui.reveal=null; } ui.surp=false; ui.surpS=null; lastTurnKey=key; } }
   _render();
   if(!G||!CODE){ if(ui.dealing||dealTimers.length) dealAbort(); }
   else if(G.phase==='peek'&&ui.dealRound!==G.round&&document.querySelector('.screen')){ ui.dealRound=G.round; dealAnim(G); }
   try{ botTick(); }catch(e){}
   if(changed){
     lastSeq=G.seq;
-    if(before && document.querySelector('.screen') && !matchMedia('(prefers-reduced-motion: reduce)').matches) animateMoves(before,cardRects());
-    if(G.fx&&G.fx.seq===G.seq&&lastFx!==G.seq){ lastFx=G.seq; flashIds(G.fx.ids||[]); }
+    if(before && !G.silent && document.querySelector('.screen') && !matchMedia('(prefers-reduced-motion: reduce)').matches) animateMoves(before,cardRects());
+    if(G.fx&&G.fx.seq===G.seq&&lastFx!==G.seq&&!G.silent){ lastFx=G.seq; flashIds(G.fx.ids||[]); }
   }
 };
 

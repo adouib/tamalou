@@ -68,6 +68,24 @@ par défausse, on peut coller la carte d'un adversaire et lui donner une des
 siennes, 20 secondes par tour, dernier tour après TamTam où l'annonceur peut
 être attaqué). Le bouton 💬 ouvre les messages entre joueurs.
 
+NOUVEAUTÉS (dev-ameur)
+----------------------
+- Égalité de points en fin de manche : départage par (1) le moins de cartes
+  en main, (2) l'absence de Joker, (3) le moins d'échanges de cartes dans la
+  manche, (4) tirage d'une carte. Le message explique la règle retenue. Pas
+  de départage pour l'annonceur du TamTam (il perd l'égalité) ni pour un
+  joueur sans carte (il gagne). Même départage pour désigner le vainqueur de
+  la partie.
+- TamTam ou main vidée : compte à rebours de 5 secondes (bip chaque seconde,
+  bandeau rouge) pendant lequel chacun peut encore coller, puis décompte.
+- Couronne sur le joueur en tête du classement général, tête d'âne sur le
+  dernier, affichées pendant la partie et sur l'écran des scores.
+- Carte Surprise ✨ : chaque manche, une carte au hasard porte une étoile que
+  seul son détenteur voit (au moment où il la découvre). Au début de son tour
+  il peut échanger en secret une de ses cartes avec celle d'un adversaire :
+  aucune animation, aucun message pour les autres. Défaussée ou collée, la
+  surprise est perdue pour la manche.
+
 JOUEURS MACHINE
 ---------------
 Dans le salon (ou entre deux manches), l'hôte peut ajouter des joueurs machine
